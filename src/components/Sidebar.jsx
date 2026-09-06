@@ -284,7 +284,7 @@ const Sidebar = () => {
         },
         {
           label: "Ambulance",
-          path: "/ambulance",
+          path: "/ambulance-requests",
           icon: Ambulance,
           show: canView("ambulance"),
         },

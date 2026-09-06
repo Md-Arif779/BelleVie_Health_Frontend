@@ -76,6 +76,26 @@ import PrescriptionList from "./pages/Prescriptions/PrescriptionList";
 import PrescriptionForm from "./pages/Prescriptions/PrescriptionForm";
 import PrescriptionDetails from "./pages/Prescriptions/PrescriptionDetails";
 
+import InsurancePolicyList from "./pages/InsurancePolicies/InsurancePolicyList";
+import InsurancePolicyForm from "./pages/InsurancePolicies/InsurancePolicyForm";
+import InsurancePolicyDetails from "./pages/InsurancePolicies/InsurancePolicyDetails";
+
+import InsuranceClaimList from "./pages/InsuranceClaims/InsuranceClaimList";
+import InsuranceClaimForm from "./pages/InsuranceClaims/InsuranceClaimForm";
+import InsuranceClaimDetails from "./pages/InsuranceClaims/InsuranceClaimDetails";
+
+import MedicineOrderList from "./pages/Pharmacy/MedicineOrderList";
+import MedicineOrderForm from "./pages/Pharmacy/MedicineOrderForm";
+import MedicineOrderDetails from "./pages/Pharmacy/MedicineOrderDetails";
+
+import OrganizationList from "./pages/Organizations/OrganizationList";
+import OrganizationForm from "./pages/Organizations/OrganizationForm";
+import OrganizationDetails from "./pages/Organizations/OrganizationDetails";
+
+import AmbulanceRequestList from "./pages/Ambulance/AmbulanceRequestList";
+import AmbulanceRequestForm from "./pages/Ambulance/AmbulanceRequestForm";
+import AmbulanceRequestDetails from "./pages/Ambulance/AmbulanceRequestDetails";
+
 
 function App() {
   return (
@@ -416,13 +436,43 @@ function App() {
               ================================================== */}
 
               <Route
-                path="/insurance/policies"
-                element={<ComingSoon title="Insurance Policies" />}
+                path="/insurance-policies"
+                element={<InsurancePolicyList />}
               />
 
               <Route
-                path="/insurance/claims"
-                element={<ComingSoon title="Insurance Claims" />}
+                path="/insurance-policies/add"
+                element={<InsurancePolicyForm />}
+              />
+
+              <Route
+                path="/insurance-policies/:id"
+                element={<InsurancePolicyDetails />}
+              />
+
+              <Route
+                path="/insurance-policies/:id/edit"
+                element={<InsurancePolicyForm />}
+              />
+
+              <Route
+                path="/insurance-claims"
+                element={<InsuranceClaimList />}
+              />
+
+              <Route
+                path="/insurance-claims/add"
+                element={<InsuranceClaimForm />}
+              />
+
+              <Route
+                path="/insurance-claims/:id"
+                element={<InsuranceClaimDetails />}
+              />
+
+              <Route
+                path="/insurance-claims/:id/edit"
+                element={<InsuranceClaimForm />}
               />
 
 
@@ -431,20 +481,64 @@ function App() {
               ================================================== */}
 
               <Route
-                path="/pharmacy/orders"
-                element={<ComingSoon title="Medicine Orders" />}
+                path="/medicine-orders"
+                element={<MedicineOrderList />}
+              />
+
+              <Route
+                path="/medicine-orders/add"
+                element={<MedicineOrderForm />}
+              />
+
+              <Route
+                path="/medicine-orders/:id/edit"
+                element={<MedicineOrderForm />}
+              />
+
+              <Route
+                path="/medicine-orders/:id"
+                element={<MedicineOrderDetails />}
               />
 
               <Route
                 path="/organizations"
-                element={<ComingSoon title="Organizations" />}
+                element={<OrganizationList />}
               />
 
               <Route
-                path="/ambulance"
-                element={<ComingSoon title="Ambulance" />}
+                path="/organizations/add"
+                element={<OrganizationForm />}
               />
 
+              <Route
+                path="/organizations/:id"
+                element={<OrganizationDetails />}
+              />
+
+              <Route
+                path="/organizations/:id/edit"
+                element={<OrganizationForm />}
+              />
+
+              <Route
+                path="/ambulance-requests"
+                element={<AmbulanceRequestList />}
+              />
+
+              <Route
+                path="/ambulance-requests/add"
+                element={<AmbulanceRequestForm />}
+              />
+
+              <Route
+                path="/ambulance-requests/:id"
+                element={<AmbulanceRequestDetails />}
+              />
+
+              <Route
+                path="/ambulance-requests/:id/edit"
+                element={<AmbulanceRequestForm />}
+              />
               <Route
                 path="/medical-tourism"
                 element={<ComingSoon title="Medical Tourism" />}
