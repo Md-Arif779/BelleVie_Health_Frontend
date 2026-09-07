@@ -96,6 +96,34 @@ import AmbulanceRequestList from "./pages/Ambulance/AmbulanceRequestList";
 import AmbulanceRequestForm from "./pages/Ambulance/AmbulanceRequestForm";
 import AmbulanceRequestDetails from "./pages/Ambulance/AmbulanceRequestDetails";
 
+import MedicalTourismRequestList from "./pages/MedicalTourism/MedicalTourismRequestList";
+import MedicalTourismRequestForm from "./pages/MedicalTourism/MedicalTourismRequestForm";
+import MedicalTourismRequestDetails from "./pages/MedicalTourism/MedicalTourismRequestDetails";
+
+import PartnerList from "./pages/Partners/PartnerList";
+import PartnerForm from "./pages/Partners/PartnerForm";
+import PartnerDetails from "./pages/Partners/PartnerDetails";
+
+import CRMInteractionList from "./pages/CRM/CRMInteractionList";
+import CRMInteractionForm from "./pages/CRM/CRMInteractionForm";
+import CRMInteractionDetails from "./pages/CRM/CRMInteractionDetails";
+
+import InvoiceList from "./pages/Billing/InvoiceList";
+import InvoiceForm from "./pages/Billing/InvoiceForm";
+import InvoiceDetails from "./pages/Billing/InvoiceDetails";
+
+import PaymentList from "./pages/Billing/PaymentList";
+import PaymentForm from "./pages/Billing/PaymentForm";
+import PaymentDetails from "./pages/Billing/PaymentDetails";
+
+import ReportOverview from "./pages/Reports/ReportOverview";
+import MemberReport from "./pages/Reports/MemberReport";
+import ProviderReport from "./pages/Reports/ProviderReport";
+
+
+
+
+
 
 function App() {
   return (
@@ -541,43 +569,101 @@ function App() {
               />
               <Route
                 path="/medical-tourism"
-                element={<ComingSoon title="Medical Tourism" />}
+                element={<MedicalTourismRequestList />}
+              />
+
+              <Route
+                path="/medical-tourism/new"
+                element={<MedicalTourismRequestForm />}
+              />
+
+              <Route
+                path="/medical-tourism/:id/edit"
+                element={<MedicalTourismRequestForm />}
+              />
+
+              <Route
+                path="/medical-tourism/:id"
+                element={<MedicalTourismRequestDetails />}
               />
 
               <Route
                 path="/partners"
-                element={<ComingSoon title="Partners" />}
+                element={<PartnerList />}
+              />
+
+              <Route
+                path="/partners/new"
+                element={<PartnerForm />}
+              />
+
+              <Route
+                path="/partners/:id"
+                element={<PartnerDetails />}
+              />
+
+              <Route
+                path="/partners/:id/edit"
+                element={<PartnerForm />}
               />
 
               <Route
                 path="/crm"
-                element={<ComingSoon title="CRM" />}
+                element={<CRMInteractionList />}
               />
 
+              <Route
+                path="/crm/new"
+                element={<CRMInteractionForm />}
+              />
 
+              <Route
+                path="/crm/:id"
+                element={<CRMInteractionDetails />}
+              />
+
+              <Route
+                path="/crm/:id/edit"
+                element={<CRMInteractionForm />}
+              />
               {/* =================================================
                   BILLING
               ================================================== */}
 
               <Route
                 path="/invoices"
-                element={<ComingSoon title="Invoices" />}
+                element={<InvoiceList />}
               />
 
               <Route
-                path="/payments"
-                element={<ComingSoon title="Payments" />}
+                path="/invoices/add"
+                element={<InvoiceForm />}
               />
+
+              <Route
+                path="/invoices/:id"
+                element={<InvoiceDetails />}
+              />
+
+              <Route
+                path="/invoices/:id/edit"
+                element={<InvoiceForm />}
+              />
+
+              <Route path="/payments" element={<PaymentList />} />
+              <Route path="/payments/add" element={<PaymentForm />} />
+              <Route path="/payments/:id" element={<PaymentDetails />} />
+              <Route path="/payments/:id/edit" element={<PaymentForm />} />
 
 
               {/* =================================================
                   REPORTS
               ================================================== */}
 
-              <Route
-                path="/reports"
-                element={<ComingSoon title="Reports" />}
-              />
+              {/* Reports */}
+            <Route path="/reports" element={<ReportOverview />} />
+            <Route path="/reports/members" element={<MemberReport />} />
+            <Route path="/reports/providers" element={<ProviderReport />} />
 
 
               {/* =================================================
