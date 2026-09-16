@@ -18,37 +18,41 @@ import {
   deleteAppointment,
 } from "../../services/appointmentService";
 
+import AppointmentForm from "./AppointmentForm";
+
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
 
-  const [selectedAppointment, setSelectedAppointment] =
-    useState(null);
-
+  // View modal
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
+
+  // Create/Edit form
+  const [showForm, setShowForm] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState(null);
 
   // --------------------------------------------------
   // Load appointments
   // --------------------------------------------------
-
   const loadAppointments = async () => {
     try {
       setLoading(true);
 
       const data = await getAppointments();
 
-      setAppointments(
-        Array.isArray(data)
-          ? data
-          : data?.results || []
-      );
+      if (Array.isArray(data)) {
+        setAppointments(data);
+      } else if (Array.isArray(data?.results)) {
+        setAppointments(data.results);
+      } else {
+        setAppointments([]);
+      }
     } catch (error) {
-      console.error(
-        "Appointments Error:",
-        error
-      );
+      console.error("Appointments Error:", error);
+      setAppointments([]);
     } finally {
       setLoading(false);
     }
@@ -61,32 +65,54 @@ const Appointments = () => {
   // --------------------------------------------------
   // Search
   // --------------------------------------------------
+  const filteredAppointments = appointments.filter((appointment) => {
+    const query = search.toLowerCase();
 
-  const filteredAppointments =
-    appointments.filter((appointment) => {
-      const searchText =
-        search.toLowerCase();
+    return (
+      appointment.appointment_id?.toLowerCase().includes(query) ||
+      appointment.member_name?.toLowerCase().includes(query) ||
+      appointment.doctor_name?.toLowerCase().includes(query) ||
+      appointment.status?.toLowerCase().includes(query)
+    );
+  });
 
-      return (
-        appointment.appointment_id
-          ?.toLowerCase()
-          .includes(searchText) ||
-        appointment.member_name
-          ?.toLowerCase()
-          .includes(searchText) ||
-        appointment.doctor_name
-          ?.toLowerCase()
-          .includes(searchText) ||
-        appointment.status
-          ?.toLowerCase()
-          .includes(searchText)
-      );
-    });
+  // --------------------------------------------------
+  // New Appointment
+  // --------------------------------------------------
+  const handleNewAppointment = () => {
+    setEditingAppointment(null);
+    setShowForm(true);
+  };
+
+  // --------------------------------------------------
+  // Edit Appointment
+  // --------------------------------------------------
+  const handleEdit = (appointment) => {
+    setEditingAppointment(appointment);
+    setShowForm(true);
+  };
+
+  // --------------------------------------------------
+  // Close Form
+  // --------------------------------------------------
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingAppointment(null);
+  };
+
+  // --------------------------------------------------
+  // Form Success
+  // --------------------------------------------------
+  const handleFormSuccess = async () => {
+    setShowForm(false);
+    setEditingAppointment(null);
+
+    await loadAppointments();
+  };
 
   // --------------------------------------------------
   // View
   // --------------------------------------------------
-
   const handleView = (appointment) => {
     setSelectedAppointment(appointment);
     setShowViewModal(true);
@@ -95,975 +121,568 @@ const Appointments = () => {
   // --------------------------------------------------
   // Delete
   // --------------------------------------------------
-
   const handleDelete = async (id) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this appointment?"
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
       await deleteAppointment(id);
-
       await loadAppointments();
     } catch (error) {
-      console.error(
-        "Delete Appointment Error:",
-        error
-      );
+      console.error("Delete Appointment Error:", error);
 
       alert(
-        "Failed to delete appointment."
+        error?.response?.data?.detail ||
+          "Failed to delete appointment."
       );
     }
   };
 
   // --------------------------------------------------
-  // Status badge
+  // Status Style
   // --------------------------------------------------
-
   const getStatusStyle = (status) => {
     switch (status) {
       case "CONFIRMED":
-        return "bg-[#ECFDF5] text-[#059669]";
+        return "bg-blue-50 text-blue-700";
 
       case "COMPLETED":
-        return "bg-[#EEF4FF] text-[#2F6FED]";
+        return "bg-green-50 text-green-700";
 
       case "CANCELLED":
-        return "bg-[#FEF2F2] text-[#DC2626]";
+        return "bg-red-50 text-red-700";
 
       case "NO_SHOW":
-        return "bg-[#FFF7ED] text-[#EA580C]";
+        return "bg-orange-50 text-orange-700";
 
       default:
-        return "bg-[#F8FAFC] text-[#6B7280]";
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   // --------------------------------------------------
-  // Format date
+  // Format Date
   // --------------------------------------------------
-
   const formatDate = (date) => {
     if (!date) return "-";
 
-    return new Date(date).toLocaleDateString(
-      "en-GB",
-      {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }
-    );
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
 
   // --------------------------------------------------
-  // Format time
+  // Format Time
   // --------------------------------------------------
-
   const formatTime = (time) => {
     if (!time) return "-";
 
-    const [hours, minutes] =
-      time.split(":");
+    const [hours, minutes] = time.split(":");
 
     const date = new Date();
 
-    date.setHours(
-      Number(hours),
-      Number(minutes)
-    );
+    date.setHours(Number(hours));
+    date.setMinutes(Number(minutes));
 
-    return date.toLocaleTimeString(
-      "en-US",
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-      }
-    );
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
     <div className="space-y-6">
 
-      {/* ================================================= */}
-      {/* Header */}
-      {/* ================================================= */}
-
-      <div className="flex items-center justify-between">
+      {/* ==================================================
+          HEADER
+      ================================================== */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
         <div>
           <div className="flex items-center gap-3">
-
-            <div
-              className="
-                w-11
-                h-11
-                rounded-xl
-                bg-[#EEF4FF]
-                text-[#2F6FED]
-                flex
-                items-center
-                justify-center
-              "
-            >
+            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
               <CalendarDays
-                size={21}
+                size={22}
+                className="text-[#2F6FED]"
               />
             </div>
 
             <div>
-              <h1
-                className="
-                  text-xl
-                  font-bold
-                  text-[#212121]
-                "
-              >
+              <h1 className="text-2xl font-bold text-[#212121]">
                 Appointments
               </h1>
 
-              <p
-                className="
-                  text-sm
-                  text-[#7A7A7A]
-                  mt-0.5
-                "
-              >
-                Manage member appointments
+              <p className="text-sm text-[#7A7A7A] mt-1">
+                Manage member appointments and schedules
               </p>
             </div>
-
           </div>
         </div>
 
+        {/* NEW APPOINTMENT BUTTON */}
         <button
           type="button"
-          className="
-            flex
-            items-center
-            gap-2
-            px-4
-            py-2.5
-            rounded-xl
-            bg-[#2F6FED]
-            text-white
-            text-sm
-            font-semibold
-            hover:bg-[#2459C7]
-            transition
-          "
+          onClick={handleNewAppointment}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#2F6FED] text-white text-sm font-semibold hover:bg-[#2459C7] transition"
         >
           <Plus size={17} />
-
           New Appointment
         </button>
-
       </div>
 
+      {/* ==================================================
+          SEARCH
+      ================================================== */}
+      <div className="bg-white rounded-2xl border border-[#EEEEEE] shadow-sm p-4">
 
-      {/* ================================================= */}
-      {/* Search */}
-      {/* ================================================= */}
-
-      <div
-        className="
-          bg-white
-          border
-          border-[#E5E7EB]
-          rounded-2xl
-          p-4
-        "
-      >
-
-        <div className="relative">
+        <div className="relative max-w-md">
 
           <Search
             size={18}
-            className="
-              absolute
-              left-3
-              top-1/2
-              -translate-y-1/2
-              text-[#9CA3AF]
-            "
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A7A7A]"
           />
 
           <input
             type="text"
             value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-            placeholder="
-              Search appointment, member, doctor...
-            "
-            className="
-              w-full
-              pl-10
-              pr-4
-              py-2.5
-              rounded-xl
-              border
-              border-[#E5E7EB]
-              text-sm
-              text-[#212121]
-              outline-none
-              focus:border-[#2F6FED]
-            "
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search appointment, member, doctor..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#EEEEEE] text-sm outline-none focus:ring-2 focus:ring-blue-100 focus:border-[#2F6FED]"
           />
 
         </div>
-
       </div>
 
+      {/* ==================================================
+          TABLE
+      ================================================== */}
+      <div className="bg-white rounded-2xl border border-[#EEEEEE] shadow-sm overflow-hidden">
 
-      {/* ================================================= */}
-      {/* Table */}
-      {/* ================================================= */}
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="w-8 h-8 border-4 border-blue-100 border-t-[#2F6FED] rounded-full animate-spin" />
+          </div>
+        ) : filteredAppointments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
 
-      <div
-        className="
-          bg-white
-          border
-          border-[#E5E7EB]
-          rounded-2xl
-          overflow-hidden
-        "
-      >
+            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+              <CalendarDays
+                size={25}
+                className="text-[#2F6FED]"
+              />
+            </div>
 
-        <div className="overflow-x-auto">
+            <h3 className="text-base font-semibold text-[#212121]">
+              No appointments found
+            </h3>
 
-          <table className="w-full">
+            <p className="text-sm text-[#7A7A7A] mt-1">
+              Try changing your search or create a new appointment.
+            </p>
 
-            <thead>
-              <tr
-                className="
-                  border-b
-                  border-[#E5E7EB]
-                  bg-[#F8FAFC]
-                "
-              >
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
 
-                <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                  Appointment
-                </th>
+            <table className="w-full text-sm">
 
-                <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                  Member
-                </th>
+              <thead>
+                <tr className="border-b border-[#EEEEEE] bg-gray-50">
 
-                <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                  Doctor
-                </th>
+                  <th className="text-left px-5 py-4 font-semibold text-[#212121]">
+                    Appointment
+                  </th>
 
-                <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                  Date & Time
-                </th>
+                  <th className="text-left px-5 py-4 font-semibold text-[#212121]">
+                    Member
+                  </th>
 
-                <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                  Type
-                </th>
+                  <th className="text-left px-5 py-4 font-semibold text-[#212121]">
+                    Doctor
+                  </th>
 
-                <th className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                  Status
-                </th>
+                  <th className="text-left px-5 py-4 font-semibold text-[#212121]">
+                    Date & Time
+                  </th>
 
-                <th className="px-5 py-3.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                  Actions
-                </th>
+                  <th className="text-left px-5 py-4 font-semibold text-[#212121]">
+                    Status
+                  </th>
 
-              </tr>
-            </thead>
+                  <th className="text-right px-5 py-4 font-semibold text-[#212121]">
+                    Actions
+                  </th>
 
-
-            <tbody>
-
-              {loading ? (
-
-                <tr>
-                  <td
-                    colSpan="7"
-                    className="
-                      px-5
-                      py-12
-                      text-center
-                      text-sm
-                      text-[#7A7A7A]
-                    "
-                  >
-                    Loading appointments...
-                  </td>
                 </tr>
+              </thead>
 
-              ) : filteredAppointments.length === 0 ? (
+              <tbody>
 
-                <tr>
-                  <td
-                    colSpan="7"
-                    className="
-                      px-5
-                      py-12
-                      text-center
-                    "
+                {filteredAppointments.map((appointment) => (
+                  <tr
+                    key={appointment.id}
+                    className="border-b border-[#EEEEEE] last:border-b-0 hover:bg-gray-50 transition"
                   >
 
-                    <CalendarDays
-                      size={35}
-                      className="
-                        mx-auto
-                        text-[#D1D5DB]
-                        mb-3
-                      "
-                    />
+                    {/* Appointment ID */}
+                    <td className="px-5 py-4">
 
-                    <p
-                      className="
-                        text-sm
-                        font-semibold
-                        text-[#6B7280]
-                      "
-                    >
-                      No appointments found
-                    </p>
+                      <div className="font-semibold text-[#212121]">
+                        {appointment.appointment_id || "-"}
+                      </div>
 
-                  </td>
-                </tr>
+                      <div className="text-xs text-[#7A7A7A] mt-1">
+                        {appointment.appointment_type || "-"}
+                      </div>
 
-              ) : (
+                    </td>
 
-                filteredAppointments.map(
-                  (appointment) => (
+                    {/* Member */}
+                    <td className="px-5 py-4">
 
-                    <tr
-                      key={appointment.id}
-                      className="
-                        border-b
-                        border-[#F0F1F3]
-                        hover:bg-[#FAFBFC]
-                        transition
-                      "
-                    >
+                      <div className="flex items-center gap-2">
 
-                      {/* Appointment */}
-
-                      <td className="px-5 py-4">
-
-                        <p
-                          className="
-                            text-sm
-                            font-bold
-                            text-[#212121]
-                          "
-                        >
-                          {appointment.appointment_id ||
-                            `#${appointment.id}`}
-                        </p>
-
-                        <p
-                          className="
-                            text-xs
-                            text-[#9CA3AF]
-                            mt-1
-                          "
-                        >
-                          {appointment.reason ||
-                            "General appointment"}
-                        </p>
-
-                      </td>
-
-
-                      {/* Member */}
-
-                      <td className="px-5 py-4">
-
-                        <div className="flex items-center gap-2.5">
-
-                          <div
-                            className="
-                              w-8
-                              h-8
-                              rounded-lg
-                              bg-[#D9F7E8]
-                              text-[#2F6FED]
-                              flex
-                              items-center
-                              justify-center
-                            "
-                          >
-                            <UserRound
-                              size={15}
-                            />
-                          </div>
-
-                          <div>
-
-                            <p
-                              className="
-                                text-sm
-                                font-semibold
-                                text-[#212121]
-                              "
-                            >
-                              {appointment.member_name ||
-                                appointment.member?.full_name ||
-                                "-"}
-                            </p>
-
-                            {appointment.member_id && (
-                              <p
-                                className="
-                                  text-[11px]
-                                  text-[#9CA3AF]
-                                "
-                              >
-                                {appointment.member_id}
-                              </p>
-                            )}
-
-                          </div>
-
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                          <UserRound
+                            size={15}
+                            className="text-[#2F6FED]"
+                          />
                         </div>
-
-                      </td>
-
-
-                      {/* Doctor */}
-
-                      <td className="px-5 py-4">
-
-                        <div className="flex items-center gap-2.5">
-
-                          <div
-                            className="
-                              w-8
-                              h-8
-                              rounded-lg
-                              bg-[#EEF4FF]
-                              text-[#2F6FED]
-                              flex
-                              items-center
-                              justify-center
-                            "
-                          >
-                            <Stethoscope
-                              size={15}
-                            />
-                          </div>
-
-                          <p
-                            className="
-                              text-sm
-                              font-semibold
-                              text-[#212121]
-                            "
-                          >
-                            {appointment.doctor_name ||
-                              appointment.doctor?.full_name ||
-                              "-"}
-                          </p>
-
-                        </div>
-
-                      </td>
-
-
-                      {/* Date */}
-
-                      <td className="px-5 py-4">
 
                         <div>
-
-                          <p
-                            className="
-                              text-sm
-                              font-semibold
-                              text-[#212121]
-                            "
-                          >
-                            {formatDate(
-                              appointment.appointment_date
-                            )}
-                          </p>
-
-                          <div
-                            className="
-                              flex
-                              items-center
-                              gap-1
-                              mt-1
-                              text-xs
-                              text-[#7A7A7A]
-                            "
-                          >
-                            <Clock size={12} />
-
-                            {formatTime(
-                              appointment.appointment_time
-                            )}
+                          <div className="font-medium text-[#212121]">
+                            {appointment.member_name || "-"}
                           </div>
-
                         </div>
 
-                      </td>
+                      </div>
 
+                    </td>
 
-                      {/* Type */}
+                    {/* Doctor */}
+                    <td className="px-5 py-4">
 
-                      <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
 
-                        <span
-                          className="
-                            inline-flex
-                            px-2.5
-                            py-1
-                            rounded-lg
-                            bg-[#F8FAFC]
-                            text-[#6B7280]
-                            text-xs
-                            font-semibold
-                          "
-                        >
-                          {appointment.appointment_type ===
-                          "TELEMEDICINE"
-                            ? "Telemedicine"
-                            : "In Person"}
-                        </span>
-
-                      </td>
-
-
-                      {/* Status */}
-
-                      <td className="px-5 py-4">
-
-                        <span
-                          className={`
-                            inline-flex
-                            px-2.5
-                            py-1
-                            rounded-lg
-                            text-xs
-                            font-semibold
-                            ${getStatusStyle(
-                              appointment.status
-                            )}
-                          `}
-                        >
-                          {appointment.status ||
-                            "PENDING"}
-                        </span>
-
-                      </td>
-
-
-                      {/* Actions */}
-
-                      <td className="px-5 py-4">
-
-                        <div className="flex justify-end gap-1">
-
-                          {/* View */}
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleView(
-                                appointment
-                              )
-                            }
-                            className="
-                              w-8
-                              h-8
-                              rounded-lg
-                              flex
-                              items-center
-                              justify-center
-                              text-[#7A7A7A]
-                              hover:bg-[#EEF4FF]
-                              hover:text-[#2F6FED]
-                              transition
-                            "
-                            title="View"
-                          >
-                            <Eye size={16} />
-                          </button>
-
-
-                          {/* Edit */}
-
-                          <button
-                            type="button"
-                            className="
-                              w-8
-                              h-8
-                              rounded-lg
-                              flex
-                              items-center
-                              justify-center
-                              text-[#7A7A7A]
-                              hover:bg-[#F8FAFC]
-                              hover:text-[#212121]
-                              transition
-                            "
-                            title="Edit"
-                          >
-                            <Pencil size={16} />
-                          </button>
-
-
-                          {/* Delete */}
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDelete(
-                                appointment.id
-                              )
-                            }
-                            className="
-                              w-8
-                              h-8
-                              rounded-lg
-                              flex
-                              items-center
-                              justify-center
-                              text-[#9CA3AF]
-                              hover:bg-[#FEF2F2]
-                              hover:text-[#DC2626]
-                              transition
-                            "
-                            title="Delete"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-
+                        <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                          <Stethoscope
+                            size={15}
+                            className="text-green-600"
+                          />
                         </div>
 
-                      </td>
+                        <span className="font-medium text-[#212121]">
+                          {appointment.doctor_name || "-"}
+                        </span>
 
-                    </tr>
+                      </div>
 
-                  )
-                )
+                    </td>
 
-              )}
+                    {/* Date / Time */}
+                    <td className="px-5 py-4">
 
-            </tbody>
+                      <div className="flex items-center gap-2 text-[#212121]">
 
-          </table>
+                        <CalendarDays
+                          size={15}
+                          className="text-[#7A7A7A]"
+                        />
 
-        </div>
+                        {formatDate(
+                          appointment.appointment_date
+                        )}
+
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs text-[#7A7A7A] mt-1">
+
+                        <Clock size={14} />
+
+                        {formatTime(
+                          appointment.appointment_time
+                        )}
+
+                      </div>
+
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-5 py-4">
+
+                      <span
+                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusStyle(
+                          appointment.status
+                        )}`}
+                      >
+                        {appointment.status || "-"}
+                      </span>
+
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-5 py-4">
+
+                      <div className="flex items-center justify-end gap-2">
+
+                        {/* View */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleView(appointment)
+                          }
+                          className="w-9 h-9 rounded-lg flex items-center justify-center text-[#7A7A7A] hover:text-[#2F6FED] hover:bg-blue-50 transition"
+                          title="View"
+                        >
+                          <Eye size={17} />
+                        </button>
+
+                        {/* Edit */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleEdit(appointment)
+                          }
+                          className="w-9 h-9 rounded-lg flex items-center justify-center text-[#7A7A7A] hover:text-blue-600 hover:bg-blue-50 transition"
+                          title="Edit"
+                        >
+                          <Pencil size={17} />
+                        </button>
+
+                        {/* Delete */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleDelete(appointment.id)
+                          }
+                          className="w-9 h-9 rounded-lg flex items-center justify-center text-[#7A7A7A] hover:text-red-600 hover:bg-red-50 transition"
+                          title="Delete"
+                        >
+                          <Trash2 size={17} />
+                        </button>
+
+                      </div>
+
+                    </td>
+
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
+        )}
 
       </div>
 
+      {/* ==================================================
+          VIEW APPOINTMENT MODAL
+      ================================================== */}
+      {showViewModal && selectedAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
 
-      {/* ================================================= */}
-      {/* View Modal */}
-      {/* ================================================= */}
+          <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden">
 
-      {showViewModal &&
-        selectedAppointment && (
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#EEEEEE]">
 
-          <div
-            className="
-              fixed
-              inset-0
-              z-50
-              bg-black/40
-              flex
-              items-center
-              justify-center
-              p-4
-            "
-          >
+              <div>
+                <h2 className="text-lg font-bold text-[#212121]">
+                  Appointment Details
+                </h2>
 
-            <div
-              className="
-                w-full
-                max-w-2xl
-                bg-white
-                rounded-2xl
-                shadow-xl
-                overflow-hidden
-              "
-            >
+                <p className="text-xs text-[#7A7A7A] mt-1">
+                  {selectedAppointment.appointment_id || "-"}
+                </p>
+              </div>
 
-              {/* Modal Header */}
-
-              <div
-                className="
-                  flex
-                  items-center
-                  justify-between
-                  px-6
-                  py-5
-                  border-b
-                  border-[#E5E7EB]
-                "
+              <button
+                type="button"
+                onClick={() => {
+                  setShowViewModal(false);
+                  setSelectedAppointment(null);
+                }}
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-[#7A7A7A] hover:bg-gray-100 transition"
               >
+                <X size={19} />
+              </button>
 
-                <div>
+            </div>
 
-                  <h2
-                    className="
-                      text-lg
-                      font-bold
-                      text-[#212121]
-                    "
-                  >
-                    Appointment Details
-                  </h2>
+            {/* Modal Body */}
+            <div className="p-6 space-y-5">
 
-                  <p
-                    className="
-                      text-xs
-                      text-[#9CA3AF]
-                      mt-1
-                    "
-                  >
-                    {selectedAppointment.appointment_id ||
-                      `Appointment #${selectedAppointment.id}`}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Member */}
+                <div className="p-4 rounded-xl bg-gray-50">
+
+                  <p className="text-xs text-[#7A7A7A] mb-1">
+                    Member
+                  </p>
+
+                  <p className="font-semibold text-[#212121]">
+                    {selectedAppointment.member_name || "-"}
                   </p>
 
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowViewModal(false)
-                  }
-                  className="
-                    w-9
-                    h-9
-                    rounded-lg
-                    flex
-                    items-center
-                    justify-center
-                    text-[#7A7A7A]
-                    hover:bg-[#F8FAFC]
-                  "
-                >
-                  <X size={18} />
-                </button>
+                {/* Doctor */}
+                <div className="p-4 rounded-xl bg-gray-50">
+
+                  <p className="text-xs text-[#7A7A7A] mb-1">
+                    Doctor
+                  </p>
+
+                  <p className="font-semibold text-[#212121]">
+                    {selectedAppointment.doctor_name || "-"}
+                  </p>
+
+                </div>
+
+                {/* Date */}
+                <div className="p-4 rounded-xl bg-gray-50">
+
+                  <p className="text-xs text-[#7A7A7A] mb-1">
+                    Date
+                  </p>
+
+                  <p className="font-semibold text-[#212121]">
+                    {formatDate(
+                      selectedAppointment.appointment_date
+                    )}
+                  </p>
+
+                </div>
+
+                {/* Time */}
+                <div className="p-4 rounded-xl bg-gray-50">
+
+                  <p className="text-xs text-[#7A7A7A] mb-1">
+                    Time
+                  </p>
+
+                  <p className="font-semibold text-[#212121]">
+                    {formatTime(
+                      selectedAppointment.appointment_time
+                    )}
+                  </p>
+
+                </div>
+
+                {/* Type */}
+                <div className="p-4 rounded-xl bg-gray-50">
+
+                  <p className="text-xs text-[#7A7A7A] mb-1">
+                    Appointment Type
+                  </p>
+
+                  <p className="font-semibold text-[#212121]">
+                    {selectedAppointment.appointment_type || "-"}
+                  </p>
+
+                </div>
+
+                {/* Status */}
+                <div className="p-4 rounded-xl bg-gray-50">
+
+                  <p className="text-xs text-[#7A7A7A] mb-1">
+                    Status
+                  </p>
+
+                  <span
+                    className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusStyle(
+                      selectedAppointment.status
+                    )}`}
+                  >
+                    {selectedAppointment.status || "-"}
+                  </span>
+
+                </div>
 
               </div>
 
+              {/* Reason */}
+              <div>
 
-              {/* Modal Body */}
+                <p className="text-xs font-medium text-[#7A7A7A] mb-2">
+                  Reason
+                </p>
 
-              <div className="p-6 space-y-5">
-
-                <div className="grid grid-cols-2 gap-4">
-
-                  <div
-                    className="
-                      p-4
-                      rounded-xl
-                      bg-[#F8FAFC]
-                    "
-                  >
-                    <p className="text-xs text-[#9CA3AF]">
-                      Member
-                    </p>
-
-                    <p className="mt-1 text-sm font-semibold text-[#212121]">
-                      {selectedAppointment.member_name ||
-                        selectedAppointment.member?.full_name ||
-                        "-"}
-                    </p>
-                  </div>
-
-
-                  <div
-                    className="
-                      p-4
-                      rounded-xl
-                      bg-[#F8FAFC]
-                    "
-                  >
-                    <p className="text-xs text-[#9CA3AF]">
-                      Doctor
-                    </p>
-
-                    <p className="mt-1 text-sm font-semibold text-[#212121]">
-                      {selectedAppointment.doctor_name ||
-                        selectedAppointment.doctor?.full_name ||
-                        "-"}
-                    </p>
-                  </div>
-
-
-                  <div
-                    className="
-                      p-4
-                      rounded-xl
-                      bg-[#F8FAFC]
-                    "
-                  >
-                    <p className="text-xs text-[#9CA3AF]">
-                      Date
-                    </p>
-
-                    <p className="mt-1 text-sm font-semibold text-[#212121]">
-                      {formatDate(
-                        selectedAppointment.appointment_date
-                      )}
-                    </p>
-                  </div>
-
-
-                  <div
-                    className="
-                      p-4
-                      rounded-xl
-                      bg-[#F8FAFC]
-                    "
-                  >
-                    <p className="text-xs text-[#9CA3AF]">
-                      Time
-                    </p>
-
-                    <p className="mt-1 text-sm font-semibold text-[#212121]">
-                      {formatTime(
-                        selectedAppointment.appointment_time
-                      )}
-                    </p>
-                  </div>
-
-
-                  <div
-                    className="
-                      p-4
-                      rounded-xl
-                      bg-[#F8FAFC]
-                    "
-                  >
-                    <p className="text-xs text-[#9CA3AF]">
-                      Appointment Type
-                    </p>
-
-                    <p className="mt-1 text-sm font-semibold text-[#212121]">
-                      {selectedAppointment.appointment_type ===
-                      "TELEMEDICINE"
-                        ? "Telemedicine"
-                        : "In Person"}
-                    </p>
-                  </div>
-
-
-                  <div
-                    className="
-                      p-4
-                      rounded-xl
-                      bg-[#F8FAFC]
-                    "
-                  >
-                    <p className="text-xs text-[#9CA3AF]">
-                      Status
-                    </p>
-
-                    <span
-                      className={`
-                        inline-flex
-                        mt-1
-                        px-2.5
-                        py-1
-                        rounded-lg
-                        text-xs
-                        font-semibold
-                        ${getStatusStyle(
-                          selectedAppointment.status
-                        )}
-                      `}
-                    >
-                      {selectedAppointment.status ||
-                        "PENDING"}
-                    </span>
-                  </div>
-
+                <div className="p-4 rounded-xl bg-gray-50 text-sm text-[#212121]">
+                  {selectedAppointment.reason || "-"}
                 </div>
 
+              </div>
 
-                {/* Reason */}
+              {/* Notes */}
+              <div>
 
-                <div>
+                <p className="text-xs font-medium text-[#7A7A7A] mb-2">
+                  Notes
+                </p>
 
-                  <p
-                    className="
-                      text-xs
-                      font-semibold
-                      text-[#9CA3AF]
-                      mb-2
-                    "
-                  >
-                    Reason
-                  </p>
-
-                  <div
-                    className="
-                      p-4
-                      rounded-xl
-                      border
-                      border-[#E5E7EB]
-                      text-sm
-                      text-[#6B7280]
-                    "
-                  >
-                    {selectedAppointment.reason ||
-                      "No reason provided."}
-                  </div>
-
-                </div>
-
-
-                {/* Notes */}
-
-                <div>
-
-                  <p
-                    className="
-                      text-xs
-                      font-semibold
-                      text-[#9CA3AF]
-                      mb-2
-                    "
-                  >
-                    Notes
-                  </p>
-
-                  <div
-                    className="
-                      p-4
-                      rounded-xl
-                      border
-                      border-[#E5E7EB]
-                      text-sm
-                      text-[#6B7280]
-                    "
-                  >
-                    {selectedAppointment.notes ||
-                      "No notes available."}
-                  </div>
-
+                <div className="p-4 rounded-xl bg-gray-50 text-sm text-[#212121]">
+                  {selectedAppointment.notes || "-"}
                 </div>
 
               </div>
 
             </div>
 
+            {/* Modal Footer */}
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-[#EEEEEE]">
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowViewModal(false);
+                  setSelectedAppointment(null);
+                }}
+                className="px-4 py-2.5 rounded-xl border border-[#EEEEEE] text-sm font-semibold text-[#212121] hover:bg-gray-50 transition"
+              >
+                Close
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowViewModal(false);
+                  handleEdit(selectedAppointment);
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2F6FED] text-white text-sm font-semibold hover:bg-[#2459C7] transition"
+              >
+                <Pencil size={16} />
+                Edit Appointment
+              </button>
+
+            </div>
+
           </div>
 
-        )}
+        </div>
+      )}
+
+      {/* ==================================================
+          CREATE / EDIT APPOINTMENT FORM
+      ================================================== */}
+      {showForm && (
+        <AppointmentForm
+          appointment={editingAppointment}
+          onClose={handleCloseForm}
+          onSuccess={handleFormSuccess}
+        />
+      )}
 
     </div>
   );
 };
 
 export default Appointments;
-

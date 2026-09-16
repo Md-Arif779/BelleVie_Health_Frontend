@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,6 +16,7 @@ import {
 } from "../../services/healthPlanService";
 
 import { useAuth } from "../../context/AuthContext";
+
 import {
   canAdd,
   canEdit,
@@ -83,7 +85,9 @@ function HealthPlans() {
       plan.plan_name?.toLowerCase().includes(keyword) ||
       plan.name?.toLowerCase().includes(keyword) ||
       plan.member_id?.toLowerCase().includes(keyword) ||
-      plan.member_name?.toLowerCase().includes(keyword)
+      plan.member_name?.toLowerCase().includes(keyword) ||
+      plan.provider_name?.toLowerCase().includes(keyword) ||
+      plan.provider?.name?.toLowerCase().includes(keyword)
     );
   });
 
@@ -146,7 +150,7 @@ function HealthPlans() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px]">
+            <table className="w-full min-w-[1050px]">
               <thead className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
                 <tr>
                   <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#7A7A7A]">
@@ -159,6 +163,10 @@ function HealthPlans() {
 
                   <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#7A7A7A]">
                     Member
+                  </th>
+
+                  <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#7A7A7A]">
+                    Provider
                   </th>
 
                   <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-[#7A7A7A]">
@@ -175,7 +183,7 @@ function HealthPlans() {
                 {filteredPlans.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6"
                       className="px-5 py-12 text-center text-sm text-[#7A7A7A]"
                     >
                       No health plans found.
@@ -187,14 +195,17 @@ function HealthPlans() {
                       key={plan.id}
                       className="border-b border-[#EEEEEE] last:border-b-0 hover:bg-[#FAFAFA]"
                     >
+                      {/* Plan ID */}
                       <td className="px-5 py-4 text-sm font-medium text-[#212121]">
                         {plan.plan_id || `#${plan.id}`}
                       </td>
 
+                      {/* Plan Name */}
                       <td className="px-5 py-4 text-sm text-[#212121]">
                         {plan.plan_name || plan.name || "-"}
                       </td>
 
+                      {/* Member */}
                       <td className="px-5 py-4">
                         <div className="text-sm font-medium text-[#212121]">
                           {plan.member_name || "-"}
@@ -205,6 +216,22 @@ function HealthPlans() {
                         </div>
                       </td>
 
+                      {/* Provider */}
+                      <td className="px-5 py-4">
+                        <div className="text-sm font-medium text-[#212121]">
+                          {plan.provider_name ||
+                            plan.provider?.name ||
+                            "-"}
+                        </div>
+
+                        {plan.provider?.partner_id && (
+                          <div className="text-xs text-[#7A7A7A]">
+                            {plan.provider.partner_id}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Status */}
                       <td className="px-5 py-4">
                         <span
                           className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
@@ -219,6 +246,7 @@ function HealthPlans() {
                         </span>
                       </td>
 
+                      {/* Actions */}
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-2">
                           {/* View */}
@@ -274,3 +302,4 @@ function HealthPlans() {
 }
 
 export default HealthPlans;
+

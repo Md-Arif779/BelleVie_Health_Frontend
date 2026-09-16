@@ -1,25 +1,145 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import {
   ArrowLeft,
-  Edit,
-  Loader2,
+  Calendar,
+  CreditCard,
+  FileText,
+  HeartPulse,
   ShieldCheck,
+  User,
+  Building2,
+  Pencil,
+  Loader2,
 } from "lucide-react";
 
 import { getHealthPlan } from "../../services/healthPlanService";
-import { useAuth } from "../../context/AuthContext";
-import { canEdit } from "../../utils/permission";
+import { getPartner } from "../../services/partnerService";
 
-const HealthPlanDetails = () => {
+import { useAuth } from "../../context/AuthContext";
+import { hasPermission } from "../../utils/permission";
+
+
+const formatDate = (date) => {
+  if (!date) return "-";
+
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+
+const formatAmount = (amount) => {
+  if (
+    amount === null ||
+    amount === undefined ||
+    amount === ""
+  ) {
+    return "-";
+  }
+
+  return `৳ ${Number(amount).toLocaleString("en-BD", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+};
+
+
+const getStatusStyle = (status) => {
+  switch (status) {
+    case "ACTIVE":
+      return "bg-green-100 text-green-700";
+
+    case "INACTIVE":
+      return "bg-gray-100 text-gray-700";
+
+    case "EXPIRED":
+      return "bg-red-100 text-red-700";
+
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+};
+
+
+const getMemberName = (member) => {
+  if (!member) return "-";
+
+  if (typeof member === "string") {
+    return member;
+  }
+
+  return (
+    member.full_name ||
+    member.name ||
+    member.member_name ||
+    member.member_id ||
+    "-"
+  );
+};
+
+
+const getMemberId = (member) => {
+  if (!member) return null;
+
+  if (typeof member === "object") {
+    return member.member_id || member.id || null;
+  }
+
+  return member;
+};
+
+
+const getProviderName = (provider) => {
+  if (!provider) return "-";
+
+  if (typeof provider === "object") {
+    return (
+      provider.name ||
+      provider.partner_name ||
+      provider.partner_id ||
+      "-"
+    );
+  }
+
+  return "-";
+};
+
+
+const getProviderId = (provider) => {
+  if (!provider) return null;
+
+  if (typeof provider === "object") {
+    return provider.partner_id || provider.id || null;
+  }
+
+  return provider;
+};
+
+
+export default function HealthPlanDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const { permissions } = useAuth();
 
   const [plan, setPlan] = useState(null);
+  const [provider, setProvider] = useState(null);
+
   const [loading, setLoading] = useState(true);
+  const [loadingProvider, setLoadingProvider] = useState(false);
+
   const [error, setError] = useState("");
+
+  const canEditPlan = hasPermission(
+    permissions,
+    "health_plans"
+  );
+
 
   useEffect(() => {
     const loadPlan = async () => {
@@ -27,11 +147,68 @@ const HealthPlanDetails = () => {
         setLoading(true);
         setError("");
 
-        const response = await getHealthPlan(id);
+        const data = await getHealthPlan(id);
 
-        setPlan(response);
+        setPlan(data);
+
+        /*
+         * Provider can come as:
+         *
+         * provider: 2
+         *
+         * OR:
+         *
+         * provider: {
+         *   id: 2,
+         *   name: "Insurance Company"
+         * }
+         */
+
+        let providerId = null;
+
+        if (
+          data.provider &&
+          typeof data.provider === "object"
+        ) {
+          providerId =
+            data.provider.id ||
+            data.provider.pk ||
+            null;
+
+          setProvider(data.provider);
+        } else {
+          providerId = data.provider;
+        }
+
+        /*
+         * If provider is only an ID,
+         * load the actual Partner.
+         */
+
+        if (providerId) {
+          try {
+            setLoadingProvider(true);
+
+            const providerData =
+              await getPartner(providerId);
+
+            setProvider(providerData);
+          } catch (providerError) {
+            console.error(
+              "Failed to load provider:",
+              providerError
+            );
+
+            setProvider(null);
+          } finally {
+            setLoadingProvider(false);
+          }
+        }
       } catch (err) {
-        console.error("Health Plan Details Error:", err);
+        console.error(
+          "Failed to load health plan:",
+          err
+        );
 
         setError(
           err?.response?.data?.detail ||
@@ -47,59 +224,11 @@ const HealthPlanDetails = () => {
     }
   }, [id]);
 
-  const formatDate = (date) => {
-    if (!date) return "N/A";
-
-    return new Date(date).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  const formatDateTime = (date) => {
-    if (!date) return "N/A";
-
-    return new Date(date).toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatAmount = (amount) => {
-    if (amount === null || amount === undefined || amount === "") {
-      return "0.00";
-    }
-
-    return Number(amount).toLocaleString("en-BD", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
-
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "ACTIVE":
-        return "bg-green-100 text-green-700";
-
-      case "INACTIVE":
-        return "bg-gray-100 text-gray-700";
-
-      case "EXPIRED":
-        return "bg-red-100 text-red-700";
-
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <div className="flex items-center gap-3 text-[#7A7A7A]">
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="flex items-center gap-3 text-bv-gray">
           <Loader2 className="w-5 h-5 animate-spin" />
           <span>Loading health plan...</span>
         </div>
@@ -107,12 +236,15 @@ const HealthPlanDetails = () => {
     );
   }
 
+
   if (error) {
     return (
       <div className="p-6">
         <button
-          onClick={() => navigate("/health-plans")}
-          className="flex items-center gap-2 text-[#2F6FED] hover:underline mb-6"
+          onClick={() =>
+            navigate("/health-plans")
+          }
+          className="flex items-center gap-2 text-bv-blue hover:text-bv-blueDark mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Health Plans
@@ -125,224 +257,499 @@ const HealthPlanDetails = () => {
     );
   }
 
+
   if (!plan) {
     return (
       <div className="p-6">
         <button
-          onClick={() => navigate("/health-plans")}
-          className="flex items-center gap-2 text-[#2F6FED] hover:underline mb-6"
+          onClick={() =>
+            navigate("/health-plans")
+          }
+          className="flex items-center gap-2 text-bv-blue hover:text-bv-blueDark mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Health Plans
         </button>
 
-        <div className="bg-white border border-[#E5E7EB] rounded-xl p-6 text-[#7A7A7A]">
+        <div className="bg-white border border-bv-card rounded-xl p-6 text-bv-gray">
           Health plan not found.
         </div>
       </div>
     );
   }
 
+
+  const memberName =
+    plan.member_name ||
+    getMemberName(plan.member);
+
+  const memberId =
+    plan.member_id ||
+    getMemberId(plan.member);
+
+
+  const providerName =
+    provider?.name ||
+    provider?.partner_name ||
+    provider?.partner_id ||
+    getProviderName(plan.provider);
+
+  const providerId =
+    provider?.partner_id ||
+    provider?.id ||
+    getProviderId(plan.provider);
+
+
   return (
-    <div className="p-6 bg-[#F2F2F2] min-h-screen">
+    <div className="p-6 space-y-6">
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
         <div>
+
           <button
-            onClick={() => navigate("/health-plans")}
-            className="flex items-center gap-2 text-[#7A7A7A] hover:text-[#2F6FED] mb-3 transition"
+            onClick={() =>
+              navigate("/health-plans")
+            }
+            className="flex items-center gap-2 text-bv-gray hover:text-bv-blue mb-4 transition"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Health Plans
           </button>
 
+
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-[#D9F7E8] flex items-center justify-center">
-              <ShieldCheck className="w-6 h-6 text-[#2F6FED]" />
+
+            <div className="w-11 h-11 rounded-xl bg-bv-mint flex items-center justify-center">
+              <HeartPulse className="w-6 h-6 text-bv-blue" />
             </div>
 
             <div>
-              <h1 className="text-2xl font-semibold text-[#212121]">
+
+              <h1 className="text-2xl font-semibold text-bv-dark">
                 Health Plan Details
               </h1>
 
-              <p className="text-sm text-[#7A7A7A]">
-                {plan.plan_id}
+              <p className="text-sm text-bv-gray mt-1">
+                {plan.plan_id ||
+                  `Plan #${plan.id}`}
               </p>
+
             </div>
+
           </div>
+
         </div>
 
-        {canEdit(permissions, "health_plans") && (
+
+        {canEditPlan && (
           <button
             onClick={() =>
-              navigate(`/health-plans/${plan.id}/edit`)
+              navigate(
+                `/health-plans/${plan.id}/edit`
+              )
             }
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#2F6FED] text-white rounded-lg hover:bg-[#2459C7] transition"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-bv-blue text-white hover:bg-bv-blueDark transition"
           >
-            <Edit className="w-4 h-4" />
+            <Pencil className="w-4 h-4" />
             Edit Plan
           </button>
         )}
+
       </div>
 
-      {/* Main Card */}
-      <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm overflow-hidden">
-        {/* Plan Header */}
-        <div className="px-6 py-5 border-b border-[#E5E7EB] flex items-center justify-between">
+
+      {/* Main Summary */}
+
+      <div className="bg-white border border-bv-card rounded-2xl shadow-bv overflow-hidden">
+
+        <div className="p-6 border-b border-bv-card">
+
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+
+            <div>
+
+              <p className="text-sm text-bv-gray mb-1">
+                Plan Name
+              </p>
+
+              <h2 className="text-xl font-semibold text-bv-dark">
+                {plan.plan_name || "-"}
+              </h2>
+
+              {plan.plan_type && (
+                <p className="text-sm text-bv-gray mt-1">
+                  {plan.plan_type}
+                </p>
+              )}
+
+            </div>
+
+
+            <span
+              className={`inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full text-sm font-medium ${getStatusStyle(
+                plan.status
+              )}`}
+            >
+              <span className="w-2 h-2 rounded-full bg-current" />
+
+              {plan.status || "UNKNOWN"}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-bv-card">
+
+          <div className="p-6">
+
+            <div className="flex items-center gap-3 mb-3">
+
+              <div className="w-9 h-9 rounded-lg bg-bv-blueLight flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-bv-blue" />
+              </div>
+
+              <span className="text-sm text-bv-gray">
+                Coverage Amount
+              </span>
+
+            </div>
+
+            <p className="text-lg font-semibold text-bv-dark">
+              {formatAmount(
+                plan.coverage_amount
+              )}
+            </p>
+
+          </div>
+
+
+          <div className="p-6">
+
+            <div className="flex items-center gap-3 mb-3">
+
+              <div className="w-9 h-9 rounded-lg bg-bv-blueLight flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-bv-blue" />
+              </div>
+
+              <span className="text-sm text-bv-gray">
+                Premium
+              </span>
+
+            </div>
+
+            <p className="text-lg font-semibold text-bv-dark">
+              {formatAmount(plan.premium)}
+            </p>
+
+          </div>
+
+
+          <div className="p-6">
+
+            <div className="flex items-center gap-3 mb-3">
+
+              <div className="w-9 h-9 rounded-lg bg-bv-mint flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-bv-blue" />
+              </div>
+
+              <span className="text-sm text-bv-gray">
+                Start Date
+              </span>
+
+            </div>
+
+            <p className="text-lg font-semibold text-bv-dark">
+              {formatDate(
+                plan.start_date
+              )}
+            </p>
+
+          </div>
+
+
+          <div className="p-6">
+
+            <div className="flex items-center gap-3 mb-3">
+
+              <div className="w-9 h-9 rounded-lg bg-bv-mint flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-bv-blue" />
+              </div>
+
+              <span className="text-sm text-bv-gray">
+                Expiry Date
+              </span>
+
+            </div>
+
+            <p className="text-lg font-semibold text-bv-dark">
+              {formatDate(
+                plan.expiry_date
+              )}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* Member + Provider */}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* Member */}
+
+        <div className="bg-white border border-bv-card rounded-2xl shadow-bv p-6">
+
+          <div className="flex items-center gap-3 mb-5">
+
+            <div className="w-10 h-10 rounded-xl bg-bv-mint flex items-center justify-center">
+              <User className="w-5 h-5 text-bv-blue" />
+            </div>
+
+            <div>
+
+              <h3 className="font-semibold text-bv-dark">
+                Member Information
+              </h3>
+
+              <p className="text-sm text-bv-gray">
+                Plan owner
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="space-y-4">
+
+            <div>
+
+              <p className="text-xs text-bv-gray mb-1">
+                Member Name
+              </p>
+
+              <p className="font-medium text-bv-dark">
+                {memberName}
+              </p>
+
+            </div>
+
+
+            {memberId && (
+              <div>
+
+                <p className="text-xs text-bv-gray mb-1">
+                  Member ID
+                </p>
+
+                <p className="font-medium text-bv-dark">
+                  {memberId}
+                </p>
+
+              </div>
+            )}
+
+          </div>
+
+        </div>
+
+
+        {/* Provider */}
+
+        <div className="bg-white border border-bv-card rounded-2xl shadow-bv p-6">
+
+          <div className="flex items-center gap-3 mb-5">
+
+            <div className="w-10 h-10 rounded-xl bg-bv-blueLight flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-bv-blue" />
+            </div>
+
+            <div>
+
+              <h3 className="font-semibold text-bv-dark">
+                Provider Information
+              </h3>
+
+              <p className="text-sm text-bv-gray">
+                Insurance / health plan provider
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="space-y-4">
+
+            <div>
+
+              <p className="text-xs text-bv-gray mb-1">
+                Provider Name
+              </p>
+
+              <p className="font-medium text-bv-dark">
+                {loadingProvider
+                  ? "Loading provider..."
+                  : providerName}
+              </p>
+
+            </div>
+
+
+            {providerId && (
+              <div>
+
+                <p className="text-xs text-bv-gray mb-1">
+                  Provider ID
+                </p>
+
+                <p className="font-medium text-bv-dark">
+                  {providerId}
+                </p>
+
+              </div>
+            )}
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* Coverage Details */}
+
+      <div className="bg-white border border-bv-card rounded-2xl shadow-bv p-6">
+
+        <div className="flex items-center gap-3 mb-5">
+
+          <div className="w-10 h-10 rounded-xl bg-bv-blueLight flex items-center justify-center">
+            <ShieldCheck className="w-5 h-5 text-bv-blue" />
+          </div>
+
           <div>
-            <h2 className="text-xl font-semibold text-[#212121]">
-              {plan.plan_name || "N/A"}
-            </h2>
 
-            <p className="text-sm text-[#7A7A7A] mt-1">
-              Plan ID: {plan.plan_id || "N/A"}
+            <h3 className="font-semibold text-bv-dark">
+              Coverage Details
+            </h3>
+
+            <p className="text-sm text-bv-gray">
+              Information about plan coverage
             </p>
+
           </div>
 
-          <span
-            className={`px-3 py-1.5 rounded-full text-sm font-medium ${getStatusStyle(
-              plan.status
-            )}`}
-          >
-            {plan.status || "N/A"}
-          </span>
         </div>
 
-        {/* Plan Information */}
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-[#212121] mb-4">
-            Plan Information
-          </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <InfoItem
-              label="Plan ID"
-              value={plan.plan_id}
-            />
+        <div className="bg-bv-bg rounded-xl p-5 min-h-[100px]">
 
-            <InfoItem
-              label="Plan Name"
-              value={plan.plan_name}
-            />
+          <p className="text-sm text-bv-dark whitespace-pre-wrap leading-6">
+            {plan.coverage_details ||
+              "No coverage details provided."}
+          </p>
 
-            <InfoItem
-              label="Plan Type"
-              value={plan.plan_type}
-            />
-
-            <InfoItem
-              label="Provider Name"
-              value={plan.provider_name}
-            />
-
-            <InfoItem
-              label="Coverage Amount"
-              value={`৳ ${formatAmount(plan.coverage_amount)}`}
-            />
-
-            <InfoItem
-              label="Premium"
-              value={`৳ ${formatAmount(plan.premium)}`}
-            />
-
-            <InfoItem
-              label="Start Date"
-              value={formatDate(plan.start_date)}
-            />
-
-            <InfoItem
-              label="Expiry Date"
-              value={formatDate(plan.expiry_date)}
-            />
-
-            <InfoItem
-              label="Status"
-              value={plan.status}
-            />
-          </div>
         </div>
 
-        {/* Member Information */}
-        <div className="px-6 py-6 border-t border-[#E5E7EB]">
-          <h3 className="text-lg font-semibold text-[#212121] mb-4">
-            Member Information
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <InfoItem
-              label="Member ID"
-              value={plan.member_id}
-            />
-
-            <InfoItem
-              label="Member Name"
-              value={plan.member_name}
-            />
-          </div>
-        </div>
-
-        {/* Coverage Details */}
-        <div className="px-6 py-6 border-t border-[#E5E7EB]">
-          <h3 className="text-lg font-semibold text-[#212121] mb-4">
-            Coverage Details
-          </h3>
-
-          <div className="bg-[#F2F2F2] rounded-lg p-4 min-h-[100px]">
-            <p className="text-sm text-[#212121] whitespace-pre-wrap">
-              {plan.coverage_details || "No coverage details available."}
-            </p>
-          </div>
-        </div>
-
-        {/* Notes */}
-        <div className="px-6 py-6 border-t border-[#E5E7EB]">
-          <h3 className="text-lg font-semibold text-[#212121] mb-4">
-            Notes
-          </h3>
-
-          <div className="bg-[#F2F2F2] rounded-lg p-4 min-h-[80px]">
-            <p className="text-sm text-[#212121] whitespace-pre-wrap">
-              {plan.notes || "No notes available."}
-            </p>
-          </div>
-        </div>
-
-        {/* Metadata */}
-        <div className="px-6 py-6 border-t border-[#E5E7EB]">
-          <h3 className="text-lg font-semibold text-[#212121] mb-4">
-            Record Information
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <InfoItem
-              label="Created At"
-              value={formatDateTime(plan.created_at)}
-            />
-
-            <InfoItem
-              label="Updated At"
-              value={formatDateTime(plan.updated_at)}
-            />
-          </div>
-        </div>
       </div>
+
+
+      {/* Notes */}
+
+      <div className="bg-white border border-bv-card rounded-2xl shadow-bv p-6">
+
+        <div className="flex items-center gap-3 mb-5">
+
+          <div className="w-10 h-10 rounded-xl bg-bv-mint flex items-center justify-center">
+            <FileText className="w-5 h-5 text-bv-blue" />
+          </div>
+
+          <div>
+
+            <h3 className="font-semibold text-bv-dark">
+              Notes
+            </h3>
+
+            <p className="text-sm text-bv-gray">
+              Additional information
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div className="bg-bv-bg rounded-xl p-5 min-h-[80px]">
+
+          <p className="text-sm text-bv-dark whitespace-pre-wrap leading-6">
+            {plan.notes ||
+              "No notes available."}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      {/* Metadata */}
+
+      <div className="bg-white border border-bv-card rounded-2xl shadow-bv p-6">
+
+        <h3 className="font-semibold text-bv-dark mb-4">
+          Record Information
+        </h3>
+
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <div>
+
+            <p className="text-xs text-bv-gray mb-1">
+              Created At
+            </p>
+
+            <p className="text-sm text-bv-dark">
+              {plan.created_at
+                ? new Date(
+                    plan.created_at
+                  ).toLocaleString()
+                : "-"}
+            </p>
+
+          </div>
+
+
+          <div>
+
+            <p className="text-xs text-bv-gray mb-1">
+              Last Updated
+            </p>
+
+            <p className="text-sm text-bv-dark">
+              {plan.updated_at
+                ? new Date(
+                    plan.updated_at
+                  ).toLocaleString()
+                : "-"}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   );
-};
+}
 
-const InfoItem = ({ label, value }) => {
-  return (
-    <div>
-      <p className="text-xs font-medium text-[#7A7A7A] mb-1">
-        {label}
-      </p>
 
-      <p className="text-sm font-medium text-[#212121]">
-        {value || "N/A"}
-      </p>
-    </div>
-  );
-};
 
-export default HealthPlanDetails;

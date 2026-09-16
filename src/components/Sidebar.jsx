@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -49,11 +48,13 @@ const Sidebar = () => {
   // Permission
   // --------------------------------------------------
   const canView = (module) => {
-    if (user?.role === "SUPER_ADMIN") {
+    // Super Admin has access to everything
+    if (user?.is_superuser) {
       return true;
     }
 
-    return hasPermission(permissions, module, "can_view");
+    // Normal users get access only to assigned modules
+    return hasPermission(permissions, module);
   };
 
   // --------------------------------------------------
@@ -96,7 +97,6 @@ const Sidebar = () => {
             canView("health_records") ||
             canView("record_documents") ||
             canView("health_plans"),
-            
 
           children: [
             {
@@ -121,7 +121,7 @@ const Sidebar = () => {
               label: "Health Plans",
               path: "/health-plans",
               icon: ClipboardList,
-              show: canView("health-plans"),
+              show: canView("health_plans"),
             },
             {
               label: "Record Documents",
@@ -315,7 +315,9 @@ const Sidebar = () => {
         {
           label: "Billing",
           icon: CreditCard,
-          show: canView("invoices") || canView("payments"),
+          show:
+            canView("invoices") ||
+            canView("payments"),
 
           children: [
             {
@@ -353,7 +355,9 @@ const Sidebar = () => {
         {
           label: "Administration",
           icon: Settings,
-          show: canView("users") || canView("permissions"),
+          show:
+            canView("users") ||
+            canView("permissions"),
 
           children: [
             {
@@ -518,7 +522,10 @@ const Sidebar = () => {
                             transition-all
                           "
                         >
-                          <Icon size={17} strokeWidth={2} />
+                          <Icon
+                            size={17}
+                            strokeWidth={2}
+                          />
                         </span>
 
                         <span className="flex-1 text-left">
@@ -724,6 +731,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-
-
-

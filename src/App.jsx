@@ -120,6 +120,9 @@ import ReportOverview from "./pages/Reports/ReportOverview";
 import MemberReport from "./pages/Reports/MemberReport";
 import ProviderReport from "./pages/Reports/ProviderReport";
 
+import UserList from "./pages/Users/UserList";
+import UserForm from "./pages/Users/UserForm";
+
 
 
 
@@ -670,10 +673,9 @@ function App() {
                   ADMINISTRATION
               ================================================== */}
 
-              <Route
-                path="/users"
-                element={<ComingSoon title="Users" />}
-              />
+              <Route path="/users" element={<UserList />} />
+              <Route path="/users/add" element={<UserForm />} />
+              <Route path="/users/:id/edit" element={<UserForm />} />
 
               <Route
                 path="/permissions"
