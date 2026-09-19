@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -47,6 +48,7 @@ const Sidebar = () => {
   // --------------------------------------------------
   // Permission
   // --------------------------------------------------
+
   const canView = (module) => {
     // Super Admin has access to everything
     if (user?.is_superuser) {
@@ -60,9 +62,15 @@ const Sidebar = () => {
   // --------------------------------------------------
   // Navigation
   // --------------------------------------------------
+
   const navSections = [
+    // ==================================================
+    // OVERVIEW
+    // ==================================================
+
     {
       title: "Overview",
+
       items: [
         {
           label: "Dashboard",
@@ -73,8 +81,13 @@ const Sidebar = () => {
       ],
     },
 
+    // ==================================================
+    // PEOPLE
+    // ==================================================
+
     {
       title: "People",
+
       items: [
         {
           label: "Members",
@@ -85,12 +98,18 @@ const Sidebar = () => {
       ],
     },
 
+    // ==================================================
+    // HEALTHCARE
+    // ==================================================
+
     {
       title: "Healthcare",
+
       items: [
         {
           label: "Healthcare",
           icon: HeartPulse,
+
           show:
             canView("health_cards") ||
             canView("health_profiles") ||
@@ -105,24 +124,28 @@ const Sidebar = () => {
               icon: IdCard,
               show: canView("health_cards"),
             },
+
             {
               label: "Health Profiles",
               path: "/health-profiles",
               icon: UserCircle,
               show: canView("health_profiles"),
             },
+
             {
               label: "Health Records",
               path: "/health-records",
               icon: FileText,
               show: canView("health_records"),
             },
+
             {
               label: "Health Plans",
               path: "/health-plans",
               icon: ClipboardList,
               show: canView("health_plans"),
             },
+
             {
               label: "Record Documents",
               path: "/record-documents",
@@ -134,12 +157,18 @@ const Sidebar = () => {
       ],
     },
 
+    // ==================================================
+    // SERVICES PROVIDED
+    // ==================================================
+
     {
-      title: "Providers",
+      title: "Services Provided",
+
       items: [
         {
-          label: "Providers",
+          label: "Services Provided",
           icon: Stethoscope,
+
           show:
             canView("doctors") ||
             canView("hospitals") ||
@@ -153,18 +182,21 @@ const Sidebar = () => {
               icon: Stethoscope,
               show: canView("doctors"),
             },
+
             {
               label: "Hospitals",
               path: "/hospitals",
               icon: Hospital,
               show: canView("hospitals"),
             },
+
             {
               label: "Diagnostic Centers",
               path: "/diagnostic-centers",
               icon: FlaskConical,
               show: canView("diagnostic_centers"),
             },
+
             {
               label: "Pharmacies",
               path: "/pharmacies",
@@ -176,12 +208,18 @@ const Sidebar = () => {
       ],
     },
 
+    // ==================================================
+    // OUR SERVICES
+    // ==================================================
+
     {
-      title: "Services",
+      title: "Our Services",
+
       items: [
         {
-          label: "Services",
+          label: "Our Services",
           icon: Activity,
+
           show:
             canView("appointments") ||
             canView("telemedicine") ||
@@ -189,7 +227,10 @@ const Sidebar = () => {
             canView("home_healthcare") ||
             canView("lab_tests") ||
             canView("lab_results") ||
-            canView("prescriptions"),
+            canView("prescriptions") ||
+            canView("medicine_orders") ||
+            canView("ambulance") ||
+            canView("medical_tourism"),
 
           children: [
             {
@@ -198,53 +239,86 @@ const Sidebar = () => {
               icon: CalendarDays,
               show: canView("appointments"),
             },
+
             {
               label: "Telemedicine",
               path: "/telemedicine",
               icon: Video,
               show: canView("telemedicine"),
             },
+
             {
               label: "Hospital Bookings",
               path: "/hospital-bookings",
               icon: Hospital,
               show: canView("hospital_bookings"),
             },
+
             {
               label: "Home Healthcare",
               path: "/home-healthcare",
               icon: Home,
               show: canView("home_healthcare"),
             },
+
             {
               label: "Lab Tests",
               path: "/lab-test-bookings",
               icon: TestTube2,
               show: canView("lab_tests"),
             },
+
             {
               label: "Lab Results",
               path: "/lab-results",
               icon: FlaskConical,
               show: canView("lab_results"),
             },
+
             {
               label: "Prescriptions",
               path: "/prescriptions",
               icon: ScrollText,
               show: canView("prescriptions"),
             },
+
+            {
+              label: "Pharmacy Orders",
+              path: "/medicine-orders",
+              icon: ShoppingCart,
+              show: canView("medicine_orders"),
+            },
+
+            {
+              label: "Ambulance",
+              path: "/ambulance-requests",
+              icon: Ambulance,
+              show: canView("ambulance"),
+            },
+
+            {
+              label: "Medical Tourism",
+              path: "/medical-tourism",
+              icon: Plane,
+              show: canView("medical_tourism"),
+            },
           ],
         },
       ],
     },
 
+    // ==================================================
+    // INSURANCE
+    // ==================================================
+
     {
       title: "Insurance",
+
       items: [
         {
           label: "Insurance",
           icon: ShieldCheck,
+
           show:
             canView("insurance_policies") ||
             canView("insurance_claims"),
@@ -256,6 +330,7 @@ const Sidebar = () => {
               icon: ShieldCheck,
               show: canView("insurance_policies"),
             },
+
             {
               label: "Insurance Claims",
               path: "/insurance-claims",
@@ -267,54 +342,61 @@ const Sidebar = () => {
       ],
     },
 
+    // ==================================================
+    // BUSINESS MANAGEMENT
+    // ==================================================
+
     {
-      title: "Operations",
+      title: "Business Management",
+
       items: [
         {
-          label: "Pharmacy Orders",
-          path: "/medicine-orders",
-          icon: ShoppingCart,
-          show: canView("medicine_orders"),
-        },
-        {
-          label: "Organizations",
-          path: "/organizations",
+          label: "Business Management",
           icon: Landmark,
-          show: canView("organizations"),
-        },
-        {
-          label: "Ambulance",
-          path: "/ambulance-requests",
-          icon: Ambulance,
-          show: canView("ambulance"),
-        },
-        {
-          label: "Medical Tourism",
-          path: "/medical-tourism",
-          icon: Plane,
-          show: canView("medical_tourism"),
-        },
-        {
-          label: "Partners",
-          path: "/partners",
-          icon: Handshake,
-          show: canView("partners"),
-        },
-        {
-          label: "CRM",
-          path: "/crm",
-          icon: MessageCircle,
-          show: canView("crm"),
+
+          show:
+            canView("organizations") ||
+            canView("partners") ||
+            canView("crm"),
+
+          children: [
+            {
+              label: "Organizations",
+              path: "/organizations",
+              icon: Landmark,
+              show: canView("organizations"),
+            },
+
+            {
+              label: "Partners",
+              path: "/partners",
+              icon: Handshake,
+              show: canView("partners"),
+            },
+
+            {
+              label: "CRM",
+              path: "/crm",
+              icon: MessageCircle,
+              show: canView("crm"),
+            },
+          ],
         },
       ],
     },
 
+    // ==================================================
+    // FINANCE
+    // ==================================================
+
     {
       title: "Finance",
+
       items: [
         {
           label: "Billing",
           icon: CreditCard,
+
           show:
             canView("invoices") ||
             canView("payments"),
@@ -326,6 +408,7 @@ const Sidebar = () => {
               icon: Receipt,
               show: canView("invoices"),
             },
+
             {
               label: "Payments",
               path: "/payments",
@@ -337,8 +420,13 @@ const Sidebar = () => {
       ],
     },
 
+    // ==================================================
+    // ANALYTICS
+    // ==================================================
+
     {
       title: "Analytics",
+
       items: [
         {
           label: "Reports",
@@ -349,12 +437,18 @@ const Sidebar = () => {
       ],
     },
 
+    // ==================================================
+    // ADMINISTRATION
+    // ==================================================
+
     {
       title: "Administration",
+
       items: [
         {
           label: "Administration",
           icon: Settings,
+
           show:
             canView("users") ||
             canView("permissions"),
@@ -366,6 +460,7 @@ const Sidebar = () => {
               icon: UserCog,
               show: canView("users"),
             },
+
             {
               label: "Permissions",
               path: "/permissions",
@@ -381,6 +476,7 @@ const Sidebar = () => {
   // --------------------------------------------------
   // Toggle menu
   // --------------------------------------------------
+
   const toggleMenu = (label) => {
     setOpenMenus((prev) => ({
       ...prev,
@@ -391,6 +487,7 @@ const Sidebar = () => {
   // --------------------------------------------------
   // Active child check
   // --------------------------------------------------
+
   const hasActiveChild = (item) => {
     if (!item.children) {
       return false;
@@ -404,6 +501,7 @@ const Sidebar = () => {
   // --------------------------------------------------
   // Automatically open active parent menu
   // --------------------------------------------------
+
   useEffect(() => {
     const activeMenus = {};
 
@@ -424,23 +522,32 @@ const Sidebar = () => {
   // --------------------------------------------------
   // Filter visible navigation
   // --------------------------------------------------
+
   const visibleSections = navSections
     .map((section) => ({
       ...section,
+
       items: section.items
         .map((item) => ({
           ...item,
+
           children: item.children
             ? item.children.filter((child) => child.show)
             : undefined,
         }))
+
         .filter(
           (item) =>
             item.show &&
             (!item.children || item.children.length > 0)
         ),
     }))
+
     .filter((section) => section.items.length > 0);
+
+  // --------------------------------------------------
+  // Render
+  // --------------------------------------------------
 
   return (
     <aside
@@ -465,6 +572,7 @@ const Sidebar = () => {
             className={sectionIndex > 0 ? "mt-7" : ""}
           >
             {/* Section title */}
+
             <div className="px-3 mb-2">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9CA3AF]">
                 {section.title}
@@ -472,6 +580,7 @@ const Sidebar = () => {
             </div>
 
             {/* Section items */}
+
             <div className="space-y-1">
               {section.items.map((item) => {
                 const Icon = item.icon;
@@ -479,6 +588,7 @@ const Sidebar = () => {
                 // --------------------------------------
                 // Parent menu
                 // --------------------------------------
+
                 if (item.children) {
                   const isOpen =
                     openMenus[item.label] ||
@@ -548,6 +658,7 @@ const Sidebar = () => {
                       </button>
 
                       {/* Children */}
+
                       <div
                         className={`
                           overflow-hidden
@@ -555,7 +666,7 @@ const Sidebar = () => {
                           duration-200
                           ${
                             isOpen
-                              ? "max-h-[600px] opacity-100 mt-1"
+                              ? "max-h-[700px] opacity-100 mt-1"
                               : "max-h-0 opacity-0"
                           }
                         `}
@@ -616,6 +727,7 @@ const Sidebar = () => {
                 // --------------------------------------
                 // Normal menu item
                 // --------------------------------------
+
                 return (
                   <NavLink
                     key={item.path}
@@ -693,6 +805,7 @@ const Sidebar = () => {
           "
         >
           {/* Avatar */}
+
           <div
             className="
               w-10
@@ -713,6 +826,7 @@ const Sidebar = () => {
           </div>
 
           {/* User info */}
+
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-bold text-[#212121] truncate">
               {user?.first_name ||
