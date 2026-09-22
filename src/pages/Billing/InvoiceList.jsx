@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -207,6 +208,7 @@ const InvoiceList = () => {
 
         <div>
           <div className="flex items-center gap-3">
+
             <div className="w-11 h-11 rounded-xl bg-[#EEF4FF] flex items-center justify-center">
               <FileText
                 size={23}
@@ -223,6 +225,7 @@ const InvoiceList = () => {
                 Manage member invoices and billing records
               </p>
             </div>
+
           </div>
         </div>
 
@@ -237,7 +240,8 @@ const InvoiceList = () => {
             Refresh
           </button>
 
-          {canAdd(permissions, "services") && (
+          {/* INVOICE ADD PERMISSION */}
+          {canAdd(permissions, "invoices") && (
             <Link
               to="/invoices/add"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#2F6FED] text-white hover:bg-[#2459C7] transition"
@@ -307,8 +311,8 @@ const InvoiceList = () => {
 
         <div className="flex flex-col md:flex-row gap-3">
 
-          {/* Search */}
           <div className="relative flex-1">
+
             <Search
               size={18}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A7A7A]"
@@ -323,9 +327,9 @@ const InvoiceList = () => {
               placeholder="Search invoice, member, service..."
               className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[#E5E7EB] outline-none focus:border-[#2F6FED] focus:ring-2 focus:ring-[#EEF4FF]"
             />
+
           </div>
 
-          {/* Status */}
           <select
             value={statusFilter}
             onChange={(event) =>
@@ -349,10 +353,12 @@ const InvoiceList = () => {
 
         {loading ? (
           <div className="flex items-center justify-center py-16">
+
             <RefreshCw
               size={25}
               className="animate-spin text-[#2F6FED]"
             />
+
           </div>
         ) : filteredInvoices.length === 0 ? (
           <div className="py-16 text-center">
@@ -486,7 +492,6 @@ const InvoiceList = () => {
                         )}`}
                       >
                         {getStatusIcon(invoice.status)}
-
                         {invoice.status || "PENDING"}
                       </span>
 
@@ -504,7 +509,8 @@ const InvoiceList = () => {
                           <Eye size={17} />
                         </Link>
 
-                        {canEdit(permissions, "services") && (
+                        {/* INVOICE EDIT PERMISSION */}
+                        {canEdit(permissions, "invoices") && (
                           <Link
                             to={`/invoices/${invoice.id}/edit`}
                             className="p-2 rounded-lg text-[#7A7A7A] hover:text-[#2F6FED] hover:bg-[#EEF4FF] transition"
@@ -514,7 +520,8 @@ const InvoiceList = () => {
                           </Link>
                         )}
 
-                        {canDelete(permissions, "services") && (
+                        {/* INVOICE DELETE PERMISSION */}
+                        {canDelete(permissions, "invoices") && (
                           <button
                             type="button"
                             onClick={() =>
@@ -557,3 +564,4 @@ const InvoiceList = () => {
 };
 
 export default InvoiceList;
+

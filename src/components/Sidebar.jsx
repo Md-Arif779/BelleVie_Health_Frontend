@@ -1,847 +1,556 @@
-
-import { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { hasPermission } from "../utils/permission";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
 
 import {
   LayoutDashboard,
   Users,
+  UserRound,
+  HeartPulse,
+  CreditCard,
+  FileText,
+  Files,
   Stethoscope,
-  CalendarDays,
+  Building2,
   FlaskConical,
   Pill,
-  CreditCard,
-  ShieldCheck,
-  HeartPulse,
-  FileText,
-  ClipboardList,
-  Settings,
-  ShieldAlert,
-  UserRound,
-  Activity,
-  IdCard,
-  UserCircle,
+  CalendarDays,
   Video,
-  Hospital,
+  BedDouble,
   Home,
-  TestTube2,
+  ClipboardList,
+  FileCheck,
+  ShieldCheck,
   ShoppingCart,
   Landmark,
   Ambulance,
   Plane,
   Handshake,
-  MessageCircle,
+  MessageSquare,
   Receipt,
+  Wallet,
+  BarChart3,
   UserCog,
   KeyRound,
-  ScrollText,
   ChevronDown,
 } from "lucide-react";
 
+import { useAuth } from "../context/AuthContext";
+import { hasPermission } from "../utils/permission";
+
+
 const Sidebar = () => {
-  const { permissions, user } = useAuth();
-  const location = useLocation();
-
-  const [openMenus, setOpenMenus] = useState({});
-
-  // --------------------------------------------------
-  // Permission
-  // --------------------------------------------------
-
-  const canView = (module) => {
-    // Super Admin has access to everything
-    if (user?.is_superuser) {
-      return true;
-    }
-
-    // Normal users get access only to assigned modules
-    return hasPermission(permissions, module);
-  };
-
-  // --------------------------------------------------
-  // Navigation
-  // --------------------------------------------------
-
-  const navSections = [
-    // ==================================================
-    // OVERVIEW
-    // ==================================================
-
-    {
-      title: "Overview",
-
-      items: [
-        {
-          label: "Dashboard",
-          path: "/",
-          icon: LayoutDashboard,
-          show: canView("dashboard"),
-        },
-      ],
-    },
-
-    // ==================================================
-    // PEOPLE
-    // ==================================================
-
-    {
-      title: "People",
-
-      items: [
-        {
-          label: "Members",
-          path: "/members",
-          icon: Users,
-          show: canView("members"),
-        },
-      ],
-    },
-
-    // ==================================================
-    // HEALTHCARE
-    // ==================================================
-
-    {
-      title: "Healthcare",
-
-      items: [
-        {
-          label: "Healthcare",
-          icon: HeartPulse,
-
-          show:
-            canView("health_cards") ||
-            canView("health_profiles") ||
-            canView("health_records") ||
-            canView("record_documents") ||
-            canView("health_plans"),
-
-          children: [
-            {
-              label: "Health Cards",
-              path: "/health-cards",
-              icon: IdCard,
-              show: canView("health_cards"),
-            },
-
-            {
-              label: "Health Profiles",
-              path: "/health-profiles",
-              icon: UserCircle,
-              show: canView("health_profiles"),
-            },
-
-            {
-              label: "Health Records",
-              path: "/health-records",
-              icon: FileText,
-              show: canView("health_records"),
-            },
-
-            {
-              label: "Health Plans",
-              path: "/health-plans",
-              icon: ClipboardList,
-              show: canView("health_plans"),
-            },
-
-            {
-              label: "Record Documents",
-              path: "/record-documents",
-              icon: FileText,
-              show: canView("record_documents"),
-            },
-          ],
-        },
-      ],
-    },
-
-    // ==================================================
-    // SERVICES PROVIDED
-    // ==================================================
-
-    {
-      title: "Services Provided",
-
-      items: [
-        {
-          label: "Services Provided",
-          icon: Stethoscope,
-
-          show:
-            canView("doctors") ||
-            canView("hospitals") ||
-            canView("diagnostic_centers") ||
-            canView("pharmacies"),
-
-          children: [
-            {
-              label: "Doctors",
-              path: "/doctors",
-              icon: Stethoscope,
-              show: canView("doctors"),
-            },
-
-            {
-              label: "Hospitals",
-              path: "/hospitals",
-              icon: Hospital,
-              show: canView("hospitals"),
-            },
-
-            {
-              label: "Diagnostic Centers",
-              path: "/diagnostic-centers",
-              icon: FlaskConical,
-              show: canView("diagnostic_centers"),
-            },
-
-            {
-              label: "Pharmacies",
-              path: "/pharmacies",
-              icon: Pill,
-              show: canView("pharmacies"),
-            },
-          ],
-        },
-      ],
-    },
-
-    // ==================================================
-    // OUR SERVICES
-    // ==================================================
-
-    {
-      title: "Our Services",
-
-      items: [
-        {
-          label: "Our Services",
-          icon: Activity,
-
-          show:
-            canView("appointments") ||
-            canView("telemedicine") ||
-            canView("hospital_bookings") ||
-            canView("home_healthcare") ||
-            canView("lab_tests") ||
-            canView("lab_results") ||
-            canView("prescriptions") ||
-            canView("medicine_orders") ||
-            canView("ambulance") ||
-            canView("medical_tourism"),
-
-          children: [
-            {
-              label: "Appointments",
-              path: "/appointments",
-              icon: CalendarDays,
-              show: canView("appointments"),
-            },
-
-            {
-              label: "Telemedicine",
-              path: "/telemedicine",
-              icon: Video,
-              show: canView("telemedicine"),
-            },
-
-            {
-              label: "Hospital Bookings",
-              path: "/hospital-bookings",
-              icon: Hospital,
-              show: canView("hospital_bookings"),
-            },
-
-            {
-              label: "Home Healthcare",
-              path: "/home-healthcare",
-              icon: Home,
-              show: canView("home_healthcare"),
-            },
-
-            {
-              label: "Lab Tests",
-              path: "/lab-test-bookings",
-              icon: TestTube2,
-              show: canView("lab_tests"),
-            },
-
-            {
-              label: "Lab Results",
-              path: "/lab-results",
-              icon: FlaskConical,
-              show: canView("lab_results"),
-            },
-
-            {
-              label: "Prescriptions",
-              path: "/prescriptions",
-              icon: ScrollText,
-              show: canView("prescriptions"),
-            },
-
-            {
-              label: "Pharmacy Orders",
-              path: "/medicine-orders",
-              icon: ShoppingCart,
-              show: canView("medicine_orders"),
-            },
-
-            {
-              label: "Ambulance",
-              path: "/ambulance-requests",
-              icon: Ambulance,
-              show: canView("ambulance"),
-            },
-
-            {
-              label: "Medical Tourism",
-              path: "/medical-tourism",
-              icon: Plane,
-              show: canView("medical_tourism"),
-            },
-          ],
-        },
-      ],
-    },
-
-    // ==================================================
-    // INSURANCE
-    // ==================================================
-
-    {
-      title: "Insurance",
-
-      items: [
-        {
-          label: "Insurance",
-          icon: ShieldCheck,
-
-          show:
-            canView("insurance_policies") ||
-            canView("insurance_claims"),
-
-          children: [
-            {
-              label: "Insurance Policies",
-              path: "/insurance-policies",
-              icon: ShieldCheck,
-              show: canView("insurance_policies"),
-            },
-
-            {
-              label: "Insurance Claims",
-              path: "/insurance-claims",
-              icon: ShieldAlert,
-              show: canView("insurance_claims"),
-            },
-          ],
-        },
-      ],
-    },
-
-    // ==================================================
-    // BUSINESS MANAGEMENT
-    // ==================================================
-
-    {
-      title: "Business Management",
-
-      items: [
-        {
-          label: "Business Management",
-          icon: Landmark,
-
-          show:
-            canView("organizations") ||
-            canView("partners") ||
-            canView("crm"),
-
-          children: [
-            {
-              label: "Organizations",
-              path: "/organizations",
-              icon: Landmark,
-              show: canView("organizations"),
-            },
-
-            {
-              label: "Partners",
-              path: "/partners",
-              icon: Handshake,
-              show: canView("partners"),
-            },
-
-            {
-              label: "CRM",
-              path: "/crm",
-              icon: MessageCircle,
-              show: canView("crm"),
-            },
-          ],
-        },
-      ],
-    },
-
-    // ==================================================
-    // FINANCE
-    // ==================================================
-
-    {
-      title: "Finance",
-
-      items: [
-        {
-          label: "Billing",
-          icon: CreditCard,
-
-          show:
-            canView("invoices") ||
-            canView("payments"),
-
-          children: [
-            {
-              label: "Invoices",
-              path: "/invoices",
-              icon: Receipt,
-              show: canView("invoices"),
-            },
-
-            {
-              label: "Payments",
-              path: "/payments",
-              icon: CreditCard,
-              show: canView("payments"),
-            },
-          ],
-        },
-      ],
-    },
-
-    // ==================================================
-    // ANALYTICS
-    // ==================================================
-
-    {
-      title: "Analytics",
-
-      items: [
-        {
-          label: "Reports",
-          path: "/reports",
-          icon: FileText,
-          show: canView("reports"),
-        },
-      ],
-    },
-
-    // ==================================================
-    // ADMINISTRATION
-    // ==================================================
-
-    {
-      title: "Administration",
-
-      items: [
-        {
-          label: "Administration",
-          icon: Settings,
-
-          show:
-            canView("users") ||
-            canView("permissions"),
-
-          children: [
-            {
-              label: "Users",
-              path: "/users",
-              icon: UserCog,
-              show: canView("users"),
-            },
-
-            {
-              label: "Permissions",
-              path: "/permissions",
-              icon: KeyRound,
-              show: canView("permissions"),
-            },
-          ],
-        },
-      ],
-    },
-  ];
-
-  // --------------------------------------------------
-  // Toggle menu
-  // --------------------------------------------------
-
-  const toggleMenu = (label) => {
-    setOpenMenus((prev) => ({
-      ...prev,
-      [label]: !prev[label],
+  const { permissions } = useAuth();
+
+  const [openMenus, setOpenMenus] = useState({
+    healthcare: true,
+    providers: true,
+    services: true,
+    operations: true,
+    billing: true,
+    administration: true,
+  });
+
+  const toggleMenu = (menu) => {
+    setOpenMenus((previous) => ({
+      ...previous,
+      [menu]: !previous[menu],
     }));
   };
 
-  // --------------------------------------------------
-  // Active child check
-  // --------------------------------------------------
-
-  const hasActiveChild = (item) => {
-    if (!item.children) {
-      return false;
-    }
-
-    return item.children.some((child) =>
-      location.pathname.startsWith(child.path)
-    );
+  const canAccess = (moduleName) => {
+    return hasPermission(permissions, moduleName);
   };
 
-  // --------------------------------------------------
-  // Automatically open active parent menu
-  // --------------------------------------------------
+  const navClass = ({ isActive }) =>
+    `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+      isActive
+        ? "bg-[#D9F7E8] text-[#2F6FED]"
+        : "text-[#7A7A7A] hover:bg-[#F2F2F2] hover:text-[#212121]"
+    }`;
 
-  useEffect(() => {
-    const activeMenus = {};
-
-    navSections.forEach((section) => {
-      section.items.forEach((item) => {
-        if (item.children && hasActiveChild(item)) {
-          activeMenus[item.label] = true;
-        }
-      });
-    });
-
-    setOpenMenus((prev) => ({
-      ...prev,
-      ...activeMenus,
-    }));
-  }, [location.pathname, permissions, user]);
-
-  // --------------------------------------------------
-  // Filter visible navigation
-  // --------------------------------------------------
-
-  const visibleSections = navSections
-    .map((section) => ({
-      ...section,
-
-      items: section.items
-        .map((item) => ({
-          ...item,
-
-          children: item.children
-            ? item.children.filter((child) => child.show)
-            : undefined,
-        }))
-
-        .filter(
-          (item) =>
-            item.show &&
-            (!item.children || item.children.length > 0)
-        ),
-    }))
-
-    .filter((section) => section.items.length > 0);
-
-  // --------------------------------------------------
-  // Render
-  // --------------------------------------------------
+  const sectionButtonClass =
+    "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold text-[#212121] hover:bg-[#F2F2F2] transition-colors";
 
   return (
-    <aside
-      className="
-        flex
-        w-[270px]
-        shrink-0
-        min-h-[calc(100vh-72px)]
-        bg-white
-        border-r border-[#E5E7EB]
-        flex-col
-      "
-    >
-      {/* -------------------------------------------- */}
-      {/* Navigation */}
-      {/* -------------------------------------------- */}
+    <aside className="w-64 shrink-0 bg-white border-r border-[#EEEEEE] min-h-[calc(100vh-72px)]">
+      <div className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-72px)]">
 
-      <nav className="flex-1 px-4 py-5 overflow-y-auto">
-        {visibleSections.map((section, sectionIndex) => (
-          <div
-            key={section.title}
-            className={sectionIndex > 0 ? "mt-7" : ""}
-          >
-            {/* Section title */}
+        {/* =====================================================
+            DASHBOARD
+        ====================================================== */}
 
-            <div className="px-3 mb-2">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9CA3AF]">
-                {section.title}
-              </p>
-            </div>
+        {canAccess("dashboard") && (
+          <NavLink to="/" className={navClass}>
+            <LayoutDashboard className="w-5 h-5" />
+            <span>Dashboard</span>
+          </NavLink>
+        )}
 
-            {/* Section items */}
 
-            <div className="space-y-1">
-              {section.items.map((item) => {
-                const Icon = item.icon;
+        {/* =====================================================
+            MEMBERS
+        ====================================================== */}
 
-                // --------------------------------------
-                // Parent menu
-                // --------------------------------------
+        {canAccess("members") && (
+          <NavLink to="/members" className={navClass}>
+            <Users className="w-5 h-5" />
+            <span>Members</span>
+          </NavLink>
+        )}
 
-                if (item.children) {
-                  const isOpen =
-                    openMenus[item.label] ||
-                    hasActiveChild(item);
 
-                  return (
-                    <div key={item.label}>
-                      <button
-                        type="button"
-                        onClick={() => toggleMenu(item.label)}
-                        className="
-                          group
-                          w-full
-                          flex
-                          items-center
-                          gap-3
-                          px-3
-                          py-2.5
-                          rounded-xl
-                          text-[13px]
-                          font-semibold
-                          text-[#6B7280]
-                          hover:bg-[#F8FAFC]
-                          hover:text-[#212121]
-                          transition-all
-                          duration-200
-                        "
-                      >
-                        <span
-                          className="
-                            flex
-                            items-center
-                            justify-center
-                            w-8
-                            h-8
-                            rounded-lg
-                            bg-[#F8FAFC]
-                            text-[#7A7A7A]
-                            group-hover:bg-[#EEF4FF]
-                            group-hover:text-[#2F6FED]
-                            transition-all
-                          "
-                        >
-                          <Icon
-                            size={17}
-                            strokeWidth={2}
-                          />
-                        </span>
+        {/* =====================================================
+            HEALTHCARE
+        ====================================================== */}
 
-                        <span className="flex-1 text-left">
-                          {item.label}
-                        </span>
+        {(canAccess("health_cards") ||
+          canAccess("health_profiles") ||
+          canAccess("health_records") ||
+          canAccess("record_documents") ||
+          canAccess("health_plans")) && (
+          <div>
 
-                        <ChevronDown
-                          size={16}
-                          strokeWidth={2}
-                          className={`
-                            transition-transform
-                            duration-200
-                            ${
-                              isOpen
-                                ? "rotate-180 text-[#2F6FED]"
-                                : "text-[#9CA3AF]"
-                            }
-                          `}
-                        />
-                      </button>
+            <button
+              type="button"
+              onClick={() => toggleMenu("healthcare")}
+              className={sectionButtonClass}
+            >
+              <div className="flex items-center gap-3">
+                <HeartPulse className="w-5 h-5 text-[#2F6FED]" />
+                <span>Healthcare</span>
+              </div>
 
-                      {/* Children */}
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  openMenus.healthcare ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-                      <div
-                        className={`
-                          overflow-hidden
-                          transition-all
-                          duration-200
-                          ${
-                            isOpen
-                              ? "max-h-[700px] opacity-100 mt-1"
-                              : "max-h-0 opacity-0"
-                          }
-                        `}
-                      >
-                        <div className="ml-5 pl-4 border-l border-[#E5E7EB] space-y-1">
-                          {item.children.map((child) => {
-                            const ChildIcon = child.icon;
+            {openMenus.healthcare && (
+              <div className="ml-3 mt-1 space-y-1 border-l border-[#EEEEEE] pl-3">
 
-                            return (
-                              <NavLink
-                                key={child.path}
-                                to={child.path}
-                                className={({ isActive }) => `
-                                  group
-                                  flex
-                                  items-center
-                                  gap-3
-                                  px-3
-                                  py-2.5
-                                  rounded-xl
-                                  text-[12px]
-                                  font-medium
-                                  transition-all
-                                  duration-200
-                                  ${
-                                    isActive
-                                      ? "bg-[#EEF4FF] text-[#2F6FED]"
-                                      : "text-[#7A7A7A] hover:bg-[#F8FAFC] hover:text-[#212121]"
-                                  }
-                                `}
-                              >
-                                {({ isActive }) => (
-                                  <>
-                                    <ChildIcon
-                                      size={15}
-                                      strokeWidth={2}
-                                      className={
-                                        isActive
-                                          ? "text-[#2F6FED]"
-                                          : "text-[#9CA3AF]"
-                                      }
-                                    />
-
-                                    <span>
-                                      {child.label}
-                                    </span>
-                                  </>
-                                )}
-                              </NavLink>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
-                // --------------------------------------
-                // Normal menu item
-                // --------------------------------------
-
-                return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.path === "/"}
-                    className={({ isActive }) => `
-                      group
-                      flex
-                      items-center
-                      gap-3
-                      px-3
-                      py-2.5
-                      rounded-xl
-                      text-[13px]
-                      font-semibold
-                      transition-all
-                      duration-200
-                      ${
-                        isActive
-                          ? "bg-[#EEF4FF] text-[#2F6FED]"
-                          : "text-[#6B7280] hover:bg-[#F8FAFC] hover:text-[#212121]"
-                      }
-                    `}
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <span
-                          className={`
-                            flex
-                            items-center
-                            justify-center
-                            w-8
-                            h-8
-                            rounded-lg
-                            transition-all
-                            ${
-                              isActive
-                                ? "bg-[#2F6FED] text-white"
-                                : "bg-[#F8FAFC] text-[#7A7A7A] group-hover:bg-[#EEF4FF] group-hover:text-[#2F6FED]"
-                            }
-                          `}
-                        >
-                          <Icon
-                            size={17}
-                            strokeWidth={2}
-                          />
-                        </span>
-
-                        <span>{item.label}</span>
-                      </>
-                    )}
+                {canAccess("health_cards") && (
+                  <NavLink to="/health-cards" className={navClass}>
+                    <CreditCard className="w-4 h-4" />
+                    <span>Health Cards</span>
                   </NavLink>
-                );
-              })}
-            </div>
+                )}
+
+                {canAccess("health_profiles") && (
+                  <NavLink to="/health-profiles" className={navClass}>
+                    <UserRound className="w-4 h-4" />
+                    <span>Health Profiles</span>
+                  </NavLink>
+                )}
+
+                {canAccess("health_records") && (
+                  <NavLink to="/health-records" className={navClass}>
+                    <FileText className="w-4 h-4" />
+                    <span>Health Records</span>
+                  </NavLink>
+                )}
+
+                {canAccess("record_documents") && (
+                  <NavLink to="/record-documents" className={navClass}>
+                    <Files className="w-4 h-4" />
+                    <span>Record Documents</span>
+                  </NavLink>
+                )}
+
+                {canAccess("health_plans") && (
+                  <NavLink to="/health-plans" className={navClass}>
+                    <ClipboardList className="w-4 h-4" />
+                    <span>Health Plans</span>
+                  </NavLink>
+                )}
+
+              </div>
+            )}
           </div>
-        ))}
-      </nav>
+        )}
 
-      {/* -------------------------------------------- */}
-      {/* Staff Card */}
-      {/* -------------------------------------------- */}
 
-      <div className="p-4 border-t border-[#E5E7EB]">
-        <div
-          className="
-            flex
-            items-center
-            gap-3
-            p-3
-            rounded-2xl
-            bg-[#F8FAFC]
-            border
-            border-[#E5E7EB]
-          "
-        >
-          {/* Avatar */}
+        {/* =====================================================
+            PROVIDERS
+        ====================================================== */}
 
-          <div
-            className="
-              w-10
-              h-10
-              shrink-0
-              rounded-xl
-              bg-[#D9F7E8]
-              flex
-              items-center
-              justify-center
-              text-[#2F6FED]
-            "
-          >
-            <UserRound
-              size={19}
-              strokeWidth={2}
-            />
+        {(canAccess("doctors") ||
+          canAccess("hospitals") ||
+          canAccess("diagnostic_centers") ||
+          canAccess("pharmacies")) && (
+          <div>
+
+            <button
+              type="button"
+              onClick={() => toggleMenu("providers")}
+              className={sectionButtonClass}
+            >
+              <div className="flex items-center gap-3">
+                <Stethoscope className="w-5 h-5 text-[#2F6FED]" />
+                <span>Providers</span>
+              </div>
+
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  openMenus.providers ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {openMenus.providers && (
+              <div className="ml-3 mt-1 space-y-1 border-l border-[#EEEEEE] pl-3">
+
+                {canAccess("doctors") && (
+                  <NavLink to="/doctors" className={navClass}>
+                    <Stethoscope className="w-4 h-4" />
+                    <span>Doctors</span>
+                  </NavLink>
+                )}
+
+                {canAccess("hospitals") && (
+                  <NavLink to="/hospitals" className={navClass}>
+                    <Building2 className="w-4 h-4" />
+                    <span>Hospitals</span>
+                  </NavLink>
+                )}
+
+                {canAccess("diagnostic_centers") && (
+                  <NavLink to="/diagnostic-centers" className={navClass}>
+                    <FlaskConical className="w-4 h-4" />
+                    <span>Diagnostic Centers</span>
+                  </NavLink>
+                )}
+
+                {canAccess("pharmacies") && (
+                  <NavLink to="/pharmacies" className={navClass}>
+                    <Pill className="w-4 h-4" />
+                    <span>Pharmacies</span>
+                  </NavLink>
+                )}
+
+              </div>
+            )}
           </div>
+        )}
 
-          {/* User info */}
 
-          <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-bold text-[#212121] truncate">
-              {user?.first_name ||
-                user?.username ||
-                "Staff User"}
-            </p>
+        {/* =====================================================
+            SERVICES
+        ====================================================== */}
 
-            <p className="text-[11px] text-[#7A7A7A] truncate mt-0.5">
-              {user?.role || "Authorized Staff"}
-            </p>
+        {(canAccess("services") ||
+          canAccess("appointments") ||
+          canAccess("telemedicine") ||
+          canAccess("hospital_bookings") ||
+          canAccess("home_healthcare") ||
+          canAccess("lab_tests") ||
+          canAccess("lab_results") ||
+          canAccess("prescriptions")) && (
+          <div>
+
+            <button
+              type="button"
+              onClick={() => toggleMenu("services")}
+              className={sectionButtonClass}
+            >
+              <div className="flex items-center gap-3">
+                <CalendarDays className="w-5 h-5 text-[#2F6FED]" />
+                <span>Services</span>
+              </div>
+
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  openMenus.services ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {openMenus.services && (
+              <div className="ml-3 mt-1 space-y-1 border-l border-[#EEEEEE] pl-3">
+
+                {canAccess("services") && (
+                  <NavLink to="/services" className={navClass}>
+                    <FileCheck className="w-4 h-4" />
+                    <span>Services</span>
+                  </NavLink>
+                )}
+
+                {canAccess("appointments") && (
+                  <NavLink to="/appointments" className={navClass}>
+                    <CalendarDays className="w-4 h-4" />
+                    <span>Appointments</span>
+                  </NavLink>
+                )}
+
+                {canAccess("telemedicine") && (
+                  <NavLink to="/telemedicine" className={navClass}>
+                    <Video className="w-4 h-4" />
+                    <span>Telemedicine</span>
+                  </NavLink>
+                )}
+
+                {canAccess("hospital_bookings") && (
+                  <NavLink to="/hospital-bookings" className={navClass}>
+                    <BedDouble className="w-4 h-4" />
+                    <span>Hospital Bookings</span>
+                  </NavLink>
+                )}
+
+                {canAccess("home_healthcare") && (
+                  <NavLink to="/home-healthcare" className={navClass}>
+                    <Home className="w-4 h-4" />
+                    <span>Home Healthcare</span>
+                  </NavLink>
+                )}
+
+                {canAccess("lab_tests") && (
+                  <NavLink to="/lab-test-bookings" className={navClass}>
+                    <FlaskConical className="w-4 h-4" />
+                    <span>Lab Tests</span>
+                  </NavLink>
+                )}
+
+                {canAccess("lab_results") && (
+                  <NavLink to="/lab-results" className={navClass}>
+                    <FileCheck className="w-4 h-4" />
+                    <span>Lab Results</span>
+                  </NavLink>
+                )}
+
+                {canAccess("prescriptions") && (
+                  <NavLink to="/prescriptions" className={navClass}>
+                    <FileText className="w-4 h-4" />
+                    <span>Prescriptions</span>
+                  </NavLink>
+                )}
+
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+
+        {/* =====================================================
+            INSURANCE
+        ====================================================== */}
+
+        {(canAccess("insurance_policies") ||
+          canAccess("insurance_claims")) && (
+          <div>
+
+            <NavLink
+              to="/insurance-policies"
+              className={navClass}
+            >
+              <ShieldCheck className="w-5 h-5" />
+              <span>Insurance Policies</span>
+            </NavLink>
+
+            {canAccess("insurance_claims") && (
+              <NavLink
+                to="/insurance-claims"
+                className={navClass}
+              >
+                <FileCheck className="w-5 h-5" />
+                <span>Insurance Claims</span>
+              </NavLink>
+            )}
+
+          </div>
+        )}
+
+
+        {/* =====================================================
+            OPERATIONS
+        ====================================================== */}
+
+        {(canAccess("medicine_orders") ||
+          canAccess("organizations") ||
+          canAccess("ambulance") ||
+          canAccess("medical_tourism") ||
+          canAccess("partners") ||
+          canAccess("crm")) && (
+          <div>
+
+            <button
+              type="button"
+              onClick={() => toggleMenu("operations")}
+              className={sectionButtonClass}
+            >
+              <div className="flex items-center gap-3">
+                <ShoppingCart className="w-5 h-5 text-[#2F6FED]" />
+                <span>Operations</span>
+              </div>
+
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  openMenus.operations ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {openMenus.operations && (
+              <div className="ml-3 mt-1 space-y-1 border-l border-[#EEEEEE] pl-3">
+
+                {canAccess("medicine_orders") && (
+                  <NavLink to="/medicine-orders" className={navClass}>
+                    <ShoppingCart className="w-4 h-4" />
+                    <span>Medicine Orders</span>
+                  </NavLink>
+                )}
+
+                {canAccess("organizations") && (
+                  <NavLink to="/organizations" className={navClass}>
+                    <Landmark className="w-4 h-4" />
+                    <span>Organizations</span>
+                  </NavLink>
+                )}
+
+                {canAccess("ambulance") && (
+                  <NavLink to="/ambulance-requests" className={navClass}>
+                    <Ambulance className="w-4 h-4" />
+                    <span>Ambulance</span>
+                  </NavLink>
+                )}
+
+                {canAccess("medical_tourism") && (
+                  <NavLink to="/medical-tourism" className={navClass}>
+                    <Plane className="w-4 h-4" />
+                    <span>Medical Tourism</span>
+                  </NavLink>
+                )}
+
+                {canAccess("partners") && (
+                  <NavLink to="/partners" className={navClass}>
+                    <Handshake className="w-4 h-4" />
+                    <span>Partners</span>
+                  </NavLink>
+                )}
+
+                {canAccess("crm") && (
+                  <NavLink to="/crm" className={navClass}>
+                    <MessageSquare className="w-4 h-4" />
+                    <span>CRM</span>
+                  </NavLink>
+                )}
+
+              </div>
+            )}
+          </div>
+        )}
+
+
+        {/* =====================================================
+            BILLING
+        ====================================================== */}
+
+        {(canAccess("invoices") || canAccess("payments")) && (
+          <div>
+
+            <button
+              type="button"
+              onClick={() => toggleMenu("billing")}
+              className={sectionButtonClass}
+            >
+              <div className="flex items-center gap-3">
+                <Receipt className="w-5 h-5 text-[#2F6FED]" />
+                <span>Billing</span>
+              </div>
+
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  openMenus.billing ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {openMenus.billing && (
+              <div className="ml-3 mt-1 space-y-1 border-l border-[#EEEEEE] pl-3">
+
+                {canAccess("invoices") && (
+                  <NavLink to="/invoices" className={navClass}>
+                    <Receipt className="w-4 h-4" />
+                    <span>Invoices</span>
+                  </NavLink>
+                )}
+
+                {canAccess("payments") && (
+                  <NavLink to="/payments" className={navClass}>
+                    <Wallet className="w-4 h-4" />
+                    <span>Payments</span>
+                  </NavLink>
+                )}
+
+              </div>
+            )}
+          </div>
+        )}
+
+
+        {/* =====================================================
+            REPORTS
+        ====================================================== */}
+
+        {canAccess("reports") && (
+          <NavLink to="/reports" className={navClass}>
+            <BarChart3 className="w-5 h-5" />
+            <span>Reports</span>
+          </NavLink>
+        )}
+
+
+        {/* =====================================================
+            ADMINISTRATION
+        ====================================================== */}
+
+        {(canAccess("users") || canAccess("permissions")) && (
+          <div>
+
+            <button
+              type="button"
+              onClick={() => toggleMenu("administration")}
+              className={sectionButtonClass}
+            >
+              <div className="flex items-center gap-3">
+                <UserCog className="w-5 h-5 text-[#2F6FED]" />
+                <span>Administration</span>
+              </div>
+
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  openMenus.administration ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {openMenus.administration && (
+              <div className="ml-3 mt-1 space-y-1 border-l border-[#EEEEEE] pl-3">
+
+                {canAccess("users") && (
+                  <NavLink to="/users" className={navClass}>
+                    <UserCog className="w-4 h-4" />
+                    <span>Users</span>
+                  </NavLink>
+                )}
+
+                {canAccess("permissions") && (
+                  <NavLink to="/permissions" className={navClass}>
+                    <KeyRound className="w-4 h-4" />
+                    <span>Permissions</span>
+                  </NavLink>
+                )}
+
+              </div>
+            )}
+
+          </div>
+        )}
+
       </div>
     </aside>
   );
 };
+
 
 export default Sidebar;

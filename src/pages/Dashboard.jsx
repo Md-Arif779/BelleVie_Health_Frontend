@@ -4,7 +4,6 @@ import {
   Activity,
   ArrowUpRight,
   CalendarDays,
-  CheckCircle2,
   ClipboardList,
   Clock3,
   FileText,
@@ -19,12 +18,12 @@ import {
   Stethoscope,
   UserPlus,
   Users,
-  XCircle,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { getDashboard } from "../services/dashboardService";
 import { useAuth } from "../context/AuthContext";
+import { hasPermission } from "../utils/permission";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -34,6 +33,12 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+
+  /*
+  ============================================================
+  LOAD DASHBOARD
+  ============================================================
+  */
 
   useEffect(() => {
     let mounted = true;
@@ -71,20 +76,48 @@ function Dashboard() {
     };
   }, []);
 
+  /*
+  ============================================================
+  DATA
+  ============================================================
+  */
+
   const summary = dashboard?.summary || {};
   const recentActivity = dashboard?.recent_activity || [];
 
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  /*
+  ============================================================
+  PERMISSION
+  ============================================================
+
+  Backend permission structure:
+
+  {
+    dashboard: true,
+    members: true,
+    health_cards: true,
+    ...
+  }
+
+  So we use:
+
+  permissions[moduleName] === true
+  ============================================================
+  */
 
   const canView = (moduleName) => {
-    if (isSuperAdmin) return true;
-    return Boolean(permissions?.[moduleName]?.can_view);
+    return hasPermission(permissions, moduleName);
   };
 
   const canAdd = (moduleName) => {
-    if (isSuperAdmin) return true;
-    return Boolean(permissions?.[moduleName]?.can_add);
+    return hasPermission(permissions, moduleName);
   };
+
+  /*
+  ============================================================
+  DISPLAY NAME
+  ============================================================
+  */
 
   const displayName = useMemo(() => {
     if (!user) return "User";
@@ -98,6 +131,12 @@ function Dashboard() {
       "User"
     );
   }, [user]);
+
+  /*
+  ============================================================
+  HEALTHCARE OVERVIEW STATISTICS
+  ============================================================
+  */
 
   const stats = [
     {
@@ -156,6 +195,12 @@ function Dashboard() {
     },
   ].filter((item) => item.permission);
 
+  /*
+  ============================================================
+  QUICK ACTIONS
+  ============================================================
+  */
+
   const quickActions = [
     {
       title: "Add Member",
@@ -187,6 +232,12 @@ function Dashboard() {
     },
   ].filter((action) => action.permission);
 
+  /*
+  ============================================================
+  SYSTEM MODULES
+  ============================================================
+  */
+
   const systemModules = [
     {
       title: "Members",
@@ -196,11 +247,18 @@ function Dashboard() {
       permission: canView("members"),
     },
     {
-      title: "Appointments",
-      description: "Manage appointments",
-      icon: CalendarDays,
-      path: "/appointments",
-      permission: canView("appointments"),
+      title: "Health Cards",
+      description: "Manage member health cards",
+      icon: HeartPulse,
+      path: "/health-cards",
+      permission: canView("health_cards"),
+    },
+    {
+      title: "Health Profiles",
+      description: "Manage member health profiles",
+      icon: Users,
+      path: "/health-profiles",
+      permission: canView("health_profiles"),
     },
     {
       title: "Health Records",
@@ -210,18 +268,25 @@ function Dashboard() {
       permission: canView("health_records"),
     },
     {
-      title: "Prescriptions",
-      description: "Manage prescriptions",
-      icon: Pill,
-      path: "/prescriptions",
-      permission: canView("prescriptions"),
-    },
-    {
       title: "Health Plans",
       description: "Manage healthcare plans",
       icon: HeartPulse,
       path: "/health-plans",
       permission: canView("health_plans"),
+    },
+    {
+      title: "Record Documents",
+      description: "Manage health record documents",
+      icon: FileText,
+      path: "/record-documents",
+      permission: canView("record_documents"),
+    },
+    {
+      title: "Prescriptions",
+      description: "Manage prescriptions",
+      icon: Pill,
+      path: "/prescriptions",
+      permission: canView("prescriptions"),
     },
     {
       title: "Insurance Policies",
@@ -253,6 +318,12 @@ function Dashboard() {
     },
   ].filter((module) => module.permission);
 
+  /*
+  ============================================================
+  SERVICE OVERVIEW
+  ============================================================
+  */
+
   const serviceOverview = [
     {
       title: "Telemedicine",
@@ -283,6 +354,12 @@ function Dashboard() {
       permission: canView("lab_tests"),
     },
   ].filter((service) => service.permission);
+
+  /*
+  ============================================================
+  ACTIVITY META
+  ============================================================
+  */
 
   const activityMeta = {
     MEMBER: {
@@ -317,6 +394,12 @@ function Dashboard() {
     },
   };
 
+  /*
+  ============================================================
+  ACTIVITY TIME
+  ============================================================
+  */
+
   const formatActivityTime = (dateValue) => {
     if (!dateValue) return "Recently";
 
@@ -333,6 +416,12 @@ function Dashboard() {
       minute: "2-digit",
     });
   };
+
+  /*
+  ============================================================
+  STATUS STYLE
+  ============================================================
+  */
 
   const getStatusStyle = (status) => {
     const normalized = String(status || "").toUpperCase();
@@ -364,6 +453,12 @@ function Dashboard() {
     return "bg-[#F3F4F6] text-[#4B5563]";
   };
 
+  /*
+  ============================================================
+  MEMBER SEARCH
+  ============================================================
+  */
+
   const handleMemberSearch = () => {
     const value = search.trim();
 
@@ -378,11 +473,18 @@ function Dashboard() {
     }
   };
 
+  /*
+  ============================================================
+  LOADING
+  ============================================================
+  */
+
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-[#2F6FED]" />
+
           <p className="text-sm text-[#7A7A7A]">
             Loading dashboard...
           </p>
@@ -391,9 +493,19 @@ function Dashboard() {
     );
   }
 
+  /*
+  ============================================================
+  UI
+  ============================================================
+  */
+
   return (
     <div className="space-y-6 pb-8">
-      {/* Header */}
+
+      {/* =====================================================
+          HEADER
+      ====================================================== */}
+
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium text-[#2F6FED]">
@@ -421,17 +533,24 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Error */}
+      {/* =====================================================
+          ERROR
+      ====================================================== */}
+
       {error && (
         <div className="rounded-xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-sm text-[#991B1B]">
           {error}
         </div>
       )}
 
-      {/* Global Member Search */}
+      {/* =====================================================
+          GLOBAL MEMBER SEARCH
+      ====================================================== */}
+
       {canView("members") && (
         <section className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
             <div>
               <h2 className="text-base font-semibold text-[#212121]">
                 Global Member Search
@@ -445,6 +564,7 @@ function Dashboard() {
 
             <div className="w-full lg:max-w-xl">
               <div className="flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-2 transition focus-within:border-[#2F6FED] focus-within:ring-2 focus-within:ring-[#2F6FED]/10">
+
                 <Search className="ml-2 h-5 w-5 shrink-0 text-[#7A7A7A]" />
 
                 <input
@@ -476,7 +596,10 @@ function Dashboard() {
         </section>
       )}
 
-      {/* Healthcare Overview */}
+      {/* =====================================================
+          HEALTHCARE OVERVIEW
+      ====================================================== */}
+
       <section>
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-[#212121]">
@@ -490,6 +613,7 @@ function Dashboard() {
 
         {stats.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
             {stats.map((stat) => {
               const Icon = stat.icon;
 
@@ -500,6 +624,7 @@ function Dashboard() {
                   className="group rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-start justify-between">
+
                     <div
                       className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.bg}`}
                     >
@@ -523,21 +648,32 @@ function Dashboard() {
                 </Link>
               );
             })}
+
           </div>
         ) : (
           <div className="rounded-2xl border border-[#E5E7EB] bg-white px-5 py-10 text-center shadow-sm">
+
             <Activity className="mx-auto h-8 w-8 text-[#9CA3AF]" />
+
             <p className="mt-3 text-sm text-[#7A7A7A]">
-              No dashboard statistics are available.
+              No dashboard statistics are available for your
+              assigned permissions.
             </p>
+
           </div>
         )}
       </section>
 
-      {/* Activities */}
+      {/* =====================================================
+          RECENT ACTIVITIES
+      ====================================================== */}
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+
         <section className="xl:col-span-2 rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
+
           <div className="flex items-center justify-between border-b border-[#E5E7EB] px-5 py-4">
+
             <div>
               <h2 className="font-semibold text-[#212121]">
                 Recent Activities
@@ -552,16 +688,20 @@ function Dashboard() {
           </div>
 
           <div className="divide-y divide-[#E5E7EB]">
+
             {recentActivity.length === 0 ? (
               <div className="px-5 py-10 text-center">
+
                 <Activity className="mx-auto h-8 w-8 text-[#9CA3AF]" />
 
                 <p className="mt-3 text-sm text-[#7A7A7A]">
                   No recent activity available.
                 </p>
+
               </div>
             ) : (
               recentActivity.slice(0, 6).map((item, index) => {
+
                 const meta =
                   activityMeta[item.type] ||
                   activityMeta.MEMBER;
@@ -573,6 +713,7 @@ function Dashboard() {
                     key={`${item.type}-${item.id}-${index}`}
                     className="flex items-center gap-3 px-5 py-4"
                   >
+
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${meta.iconClass}`}
                     >
@@ -580,7 +721,9 @@ function Dashboard() {
                     </div>
 
                     <div className="min-w-0 flex-1">
+
                       <div className="flex flex-wrap items-center gap-2">
+
                         <p className="truncate text-sm font-medium text-[#212121]">
                           {item.title ||
                             item.description ||
@@ -596,6 +739,7 @@ function Dashboard() {
                             {item.status}
                           </span>
                         )}
+
                       </div>
 
                       <p className="mt-1 text-xs text-[#7A7A7A]">
@@ -606,18 +750,25 @@ function Dashboard() {
                           item.created_at || item.date
                         )}
                       </p>
+
                     </div>
                   </div>
                 );
               })
             )}
+
           </div>
         </section>
 
-        {/* Appointment Overview */}
+        {/* =====================================================
+            APPOINTMENT OVERVIEW
+        ====================================================== */}
+
         {canView("appointments") && (
           <section className="rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
+
             <div className="border-b border-[#E5E7EB] px-5 py-4">
+
               <h2 className="font-semibold text-[#212121]">
                 Appointment Overview
               </h2>
@@ -625,14 +776,18 @@ function Dashboard() {
               <p className="mt-1 text-xs text-[#7A7A7A]">
                 Current appointment summary
               </p>
+
             </div>
 
             <div className="space-y-3 p-5">
+
               <Link
                 to="/appointments"
                 className="flex items-center justify-between rounded-xl bg-[#EEF4FF] px-4 py-4 transition hover:bg-[#E4EDFF]"
               >
+
                 <div className="flex items-center gap-3">
+
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white">
                     <CalendarDays className="h-4 w-4 text-[#2F6FED]" />
                   </div>
@@ -640,14 +795,17 @@ function Dashboard() {
                   <span className="text-sm font-medium text-[#212121]">
                     Total Appointments
                   </span>
+
                 </div>
 
                 <span className="text-lg font-bold text-[#2F6FED]">
                   {summary.appointments ?? 0}
                 </span>
+
               </Link>
 
               <div className="rounded-xl border border-dashed border-[#E5E7EB] px-4 py-5 text-center">
+
                 <p className="text-sm font-medium text-[#212121]">
                   Appointment status breakdown
                 </p>
@@ -657,16 +815,24 @@ function Dashboard() {
                   counts will appear when the backend provides
                   status-wise statistics.
                 </p>
+
               </div>
+
             </div>
           </section>
         )}
+
       </div>
 
-      {/* Service Overview */}
+      {/* =====================================================
+          SERVICE OVERVIEW
+      ====================================================== */}
+
       {serviceOverview.length > 0 && (
         <section className="rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
+
           <div className="flex items-center justify-between border-b border-[#E5E7EB] px-5 py-4">
+
             <div>
               <h2 className="font-semibold text-[#212121]">
                 Service Overview
@@ -678,10 +844,13 @@ function Dashboard() {
             </div>
 
             <ClipboardList className="h-5 w-5 text-[#7A7A7A]" />
+
           </div>
 
           <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4">
+
             {serviceOverview.map((service) => {
+
               const Icon = service.icon;
 
               return (
@@ -690,12 +859,15 @@ function Dashboard() {
                   to={service.path}
                   className="group rounded-xl border border-[#E5E7EB] p-4 transition hover:border-[#2F6FED] hover:bg-[#FAFCFF]"
                 >
+
                   <div className="flex items-center justify-between">
+
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EEF4FF]">
                       <Icon className="h-5 w-5 text-[#2F6FED]" />
                     </div>
 
                     <ArrowUpRight className="h-4 w-4 text-[#9CA3AF] group-hover:text-[#2F6FED]" />
+
                   </div>
 
                   <p className="mt-4 text-sm font-medium text-[#212121]">
@@ -705,16 +877,23 @@ function Dashboard() {
                   <p className="mt-1 text-2xl font-bold text-[#212121]">
                     {service.value}
                   </p>
+
                 </Link>
               );
             })}
+
           </div>
         </section>
       )}
 
-      {/* Pending Actions */}
+      {/* =====================================================
+          PENDING ACTIONS
+      ====================================================== */}
+
       <section className="rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
+
         <div className="border-b border-[#E5E7EB] px-5 py-4">
+
           <h2 className="font-semibold text-[#212121]">
             Pending Actions
           </h2>
@@ -722,14 +901,17 @@ function Dashboard() {
           <p className="mt-1 text-xs text-[#7A7A7A]">
             Items that may require staff attention
           </p>
+
         </div>
 
         <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-3">
+
           {canView("appointments") && (
             <Link
               to="/appointments"
               className="flex items-center gap-4 rounded-xl border border-[#E5E7EB] p-4 transition hover:border-[#2F6FED] hover:bg-[#FAFCFF]"
             >
+
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FEF3C7]">
                 <Clock3 className="h-5 w-5 text-[#D97706]" />
               </div>
@@ -743,6 +925,7 @@ function Dashboard() {
                   Review appointment requests
                 </p>
               </div>
+
             </Link>
           )}
 
@@ -751,9 +934,8 @@ function Dashboard() {
               to="/payments"
               className="flex items-center gap-4 rounded-xl border border-[#E5E7EB] p-4 transition hover:border-[#2F6FED] hover:bg-[#FAFCFF]"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FEFCE8]">
-                <WalletIcon />
-              </div>
+
+              <WalletIcon />
 
               <div>
                 <p className="text-sm font-semibold text-[#212121]">
@@ -764,6 +946,7 @@ function Dashboard() {
                   Review payment transactions
                 </p>
               </div>
+
             </Link>
           )}
 
@@ -772,6 +955,7 @@ function Dashboard() {
               to="/insurance-claims"
               className="flex items-center gap-4 rounded-xl border border-[#E5E7EB] p-4 transition hover:border-[#2F6FED] hover:bg-[#FAFCFF]"
             >
+
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EEF2FF]">
                 <ShieldCheck className="h-5 w-5 text-[#4F46E5]" />
               </div>
@@ -785,15 +969,33 @@ function Dashboard() {
                   Review insurance claims
                 </p>
               </div>
+
             </Link>
           )}
+
+          {!canView("appointments") &&
+            !canView("payments") &&
+            !canView("insurance_claims") && (
+              <div className="md:col-span-3 rounded-xl border border-dashed border-[#E5E7EB] px-4 py-6 text-center">
+                <p className="text-sm text-[#7A7A7A]">
+                  No pending actions are available for your
+                  assigned permissions.
+                </p>
+              </div>
+            )}
+
         </div>
       </section>
 
-      {/* Quick Actions */}
+      {/* =====================================================
+          QUICK ACTIONS
+      ====================================================== */}
+
       {quickActions.length > 0 && (
         <section>
+
           <div className="mb-4">
+
             <h2 className="text-lg font-semibold text-[#212121]">
               Quick Actions
             </h2>
@@ -801,10 +1003,13 @@ function Dashboard() {
             <p className="mt-1 text-sm text-[#7A7A7A]">
               Frequently used actions for daily operations
             </p>
+
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
             {quickActions.map((action) => {
+
               const Icon = action.icon;
 
               return (
@@ -813,12 +1018,15 @@ function Dashboard() {
                   to={action.path}
                   className="group rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#2F6FED] hover:shadow-md"
                 >
+
                   <div className="flex items-start justify-between">
+
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF4FF]">
                       <Icon className="h-5 w-5 text-[#2F6FED]" />
                     </div>
 
                     <Plus className="h-5 w-5 text-[#9CA3AF] transition group-hover:text-[#2F6FED]" />
+
                   </div>
 
                   <h3 className="mt-5 text-sm font-semibold text-[#212121]">
@@ -828,17 +1036,24 @@ function Dashboard() {
                   <p className="mt-1 text-xs text-[#7A7A7A]">
                     {action.description}
                   </p>
+
                 </Link>
               );
             })}
+
           </div>
         </section>
       )}
 
-      {/* System Overview */}
+      {/* =====================================================
+          SYSTEM OVERVIEW
+      ====================================================== */}
+
       {systemModules.length > 0 && (
         <section className="rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
+
           <div className="border-b border-[#E5E7EB] px-5 py-4">
+
             <h2 className="font-semibold text-[#212121]">
               System Overview
             </h2>
@@ -847,10 +1062,13 @@ function Dashboard() {
               Access healthcare management modules from one
               place
             </p>
+
           </div>
 
           <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3">
+
             {systemModules.map((module) => {
+
               const Icon = module.icon;
 
               return (
@@ -859,11 +1077,13 @@ function Dashboard() {
                   to={module.path}
                   className="group flex items-center gap-4 rounded-xl border border-[#E5E7EB] p-4 transition hover:border-[#2F6FED] hover:bg-[#FAFCFF]"
                 >
+
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EEF4FF]">
                     <Icon className="h-5 w-5 text-[#2F6FED]" />
                   </div>
 
                   <div className="min-w-0 flex-1">
+
                     <p className="text-sm font-semibold text-[#212121]">
                       {module.title}
                     </p>
@@ -871,18 +1091,25 @@ function Dashboard() {
                     <p className="mt-1 text-xs text-[#7A7A7A]">
                       {module.description}
                     </p>
+
                   </div>
 
                   <ArrowUpRight className="h-4 w-4 shrink-0 text-[#9CA3AF] transition group-hover:text-[#2F6FED]" />
+
                 </Link>
               );
             })}
+
           </div>
         </section>
       )}
 
-      {/* Footer */}
+      {/* =====================================================
+          FOOTER
+      ====================================================== */}
+
       <div className="flex flex-col gap-2 rounded-xl border border-[#E5E7EB] bg-white px-5 py-4 text-xs text-[#7A7A7A] sm:flex-row sm:items-center sm:justify-between">
+
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-[#16A34A]" />
 
@@ -891,23 +1118,31 @@ function Dashboard() {
           </span>
         </div>
 
-        <span>Dashboard data loaded successfully</span>
+        <span>
+          Dashboard data loaded successfully
+        </span>
+
       </div>
     </div>
   );
 }
 
 /*
-  Small reusable icon wrapper for the payment action.
-  Kept here to avoid adding another import just for this icon.
+============================================================
+PAYMENT ICON
+============================================================
 */
+
 function WalletIcon() {
   return (
     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FEFCE8]">
-      <span className="text-lg font-bold text-[#CA8A04]">৳</span>
+      <span className="text-lg font-bold text-[#CA8A04]">
+        ৳
+      </span>
     </div>
   );
 }
 
 export default Dashboard;
+
 

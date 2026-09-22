@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -248,11 +249,12 @@ const InvoiceForm = () => {
 
   if (
     !isEditMode &&
-    !canAdd(permissions, "services")
+    !canAdd(permissions, "invoices")
   ) {
     return (
       <div className="min-h-screen bg-[#F2F2F2] p-6">
         <div className="max-w-2xl mx-auto bg-white rounded-xl border border-[#E5E7EB] p-8 text-center">
+
           <h2 className="text-xl font-bold text-[#212121]">
             Permission Denied
           </h2>
@@ -268,6 +270,7 @@ const InvoiceForm = () => {
             <ArrowLeft size={17} />
             Back to Invoices
           </Link>
+
         </div>
       </div>
     );
@@ -275,11 +278,12 @@ const InvoiceForm = () => {
 
   if (
     isEditMode &&
-    !canEdit(permissions, "services")
+    !canEdit(permissions, "invoices")
   ) {
     return (
       <div className="min-h-screen bg-[#F2F2F2] p-6">
         <div className="max-w-2xl mx-auto bg-white rounded-xl border border-[#E5E7EB] p-8 text-center">
+
           <h2 className="text-xl font-bold text-[#212121]">
             Permission Denied
           </h2>
@@ -295,19 +299,26 @@ const InvoiceForm = () => {
             <ArrowLeft size={17} />
             Back to Invoices
           </Link>
+
         </div>
       </div>
     );
   }
 
+  /* =========================================================
+     INITIAL LOADING
+  ========================================================= */
+
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-[#F2F2F2] p-6">
         <div className="flex justify-center items-center py-20">
+
           <RefreshCw
             size={28}
             className="animate-spin text-[#2F6FED]"
           />
+
         </div>
       </div>
     );
@@ -316,7 +327,9 @@ const InvoiceForm = () => {
   return (
     <div className="min-h-screen bg-[#F2F2F2] p-6">
 
-      {/* Header */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
       <div className="max-w-5xl mx-auto mb-6">
 
@@ -331,13 +344,16 @@ const InvoiceForm = () => {
         <div className="flex items-center gap-3">
 
           <div className="w-11 h-11 rounded-xl bg-[#EEF4FF] flex items-center justify-center">
+
             <FileText
               size={23}
               className="text-[#2F6FED]"
             />
+
           </div>
 
           <div>
+
             <h1 className="text-2xl font-bold text-[#212121]">
               {isEditMode
                 ? "Edit Invoice"
@@ -349,12 +365,16 @@ const InvoiceForm = () => {
                 ? "Update invoice information"
                 : "Create a new member invoice"}
             </p>
+
           </div>
 
         </div>
+
       </div>
 
-      {/* Error */}
+      {/* =====================================================
+          ERROR
+      ===================================================== */}
 
       {error && (
         <div className="max-w-5xl mx-auto mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 whitespace-pre-line">
@@ -362,14 +382,18 @@ const InvoiceForm = () => {
         </div>
       )}
 
-      {/* Form */}
+      {/* =====================================================
+          FORM
+      ===================================================== */}
 
       <form
         onSubmit={handleSubmit}
         className="max-w-5xl mx-auto"
       >
 
-        {/* Invoice Information */}
+        {/* ===================================================
+            INVOICE INFORMATION
+        =================================================== */}
 
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 mb-5">
 
@@ -388,7 +412,7 @@ const InvoiceForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-            {/* Member Dropdown */}
+            {/* Member */}
 
             <div>
 
@@ -491,6 +515,7 @@ const InvoiceForm = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 rounded-lg border border-[#E5E7EB] bg-white outline-none focus:border-[#2F6FED]"
               >
+
                 <option value="PENDING">
                   Pending
                 </option>
@@ -510,6 +535,7 @@ const InvoiceForm = () => {
                 <option value="REFUNDED">
                   Refunded
                 </option>
+
               </select>
 
             </div>
@@ -518,7 +544,9 @@ const InvoiceForm = () => {
 
         </div>
 
-        {/* Amount Section */}
+        {/* ===================================================
+            AMOUNT SECTION
+        =================================================== */}
 
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 mb-5">
 
@@ -626,7 +654,9 @@ const InvoiceForm = () => {
 
         </div>
 
-        {/* Due Date & Description */}
+        {/* ===================================================
+            DUE DATE & DESCRIPTION
+        =================================================== */}
 
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 mb-5">
 
@@ -693,7 +723,9 @@ const InvoiceForm = () => {
 
         </div>
 
-        {/* Actions */}
+        {/* ===================================================
+            ACTIONS
+        =================================================== */}
 
         <div className="flex justify-end gap-3">
 
@@ -716,6 +748,7 @@ const InvoiceForm = () => {
                   size={18}
                   className="animate-spin"
                 />
+
                 Saving...
               </>
             ) : (
@@ -739,3 +772,4 @@ const InvoiceForm = () => {
 };
 
 export default InvoiceForm;
+

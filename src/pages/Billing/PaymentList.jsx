@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -160,7 +161,7 @@ const PaymentList = () => {
   };
 
   /* =========================================================
-     FORMAT
+     FORMAT AMOUNT
   ========================================================= */
 
   const formatAmount = (amount) => {
@@ -172,6 +173,10 @@ const PaymentList = () => {
       }
     )}`;
   };
+
+  /* =========================================================
+     FORMAT DATE TIME
+  ========================================================= */
 
   const formatDateTime = (date) => {
     if (!date) {
@@ -191,7 +196,7 @@ const PaymentList = () => {
   };
 
   /* =========================================================
-     STATUS
+     STATUS CLASS
   ========================================================= */
 
   const getStatusClass = (status) => {
@@ -210,6 +215,10 @@ const PaymentList = () => {
     }
   };
 
+  /* =========================================================
+     STATUS ICON
+  ========================================================= */
+
   const getStatusIcon = (status) => {
     switch (status) {
       case "PAID":
@@ -227,7 +236,7 @@ const PaymentList = () => {
   };
 
   /* =========================================================
-     PAYMENT METHOD
+     PAYMENT METHOD LABEL
   ========================================================= */
 
   const getPaymentMethodLabel = (method) => {
@@ -284,6 +293,10 @@ const PaymentList = () => {
       0
     );
 
+  /* =========================================================
+     RENDER
+  ========================================================= */
+
   return (
     <div className="min-h-screen bg-[#F2F2F2] p-6">
 
@@ -316,6 +329,8 @@ const PaymentList = () => {
 
         <div className="flex gap-2">
 
+          {/* Refresh */}
+
           <button
             type="button"
             onClick={loadPayments}
@@ -325,7 +340,12 @@ const PaymentList = () => {
             Refresh
           </button>
 
-          {canAdd(permissions, "services") && (
+          {/* Add Payment */}
+
+          {canAdd(
+            permissions,
+            "payments"
+          ) && (
             <Link
               to="/payments/add"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#2F6FED] text-white hover:bg-[#2459C7] transition"
@@ -355,7 +375,10 @@ const PaymentList = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
 
+        {/* Total Payments */}
+
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
+
           <p className="text-sm text-[#7A7A7A]">
             Total Payments
           </p>
@@ -363,9 +386,13 @@ const PaymentList = () => {
           <h2 className="text-2xl font-bold text-[#212121] mt-2">
             {totalPayments}
           </h2>
+
         </div>
 
+        {/* Paid */}
+
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
+
           <p className="text-sm text-[#7A7A7A]">
             Paid
           </p>
@@ -373,9 +400,13 @@ const PaymentList = () => {
           <h2 className="text-2xl font-bold text-[#16A34A] mt-2">
             {paidPayments}
           </h2>
+
         </div>
 
+        {/* Pending */}
+
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
+
           <p className="text-sm text-[#7A7A7A]">
             Pending
           </p>
@@ -383,9 +414,13 @@ const PaymentList = () => {
           <h2 className="text-2xl font-bold text-[#F59E0B] mt-2">
             {pendingPayments}
           </h2>
+
         </div>
 
+        {/* Refunded */}
+
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
+
           <p className="text-sm text-[#7A7A7A]">
             Refunded
           </p>
@@ -393,16 +428,23 @@ const PaymentList = () => {
           <h2 className="text-2xl font-bold text-purple-600 mt-2">
             {refundedPayments}
           </h2>
+
         </div>
 
+        {/* Paid Amount */}
+
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
+
           <p className="text-sm text-[#7A7A7A]">
             Paid Amount
           </p>
 
           <h2 className="text-2xl font-bold text-[#2F6FED] mt-2">
-            {formatAmount(totalPaidAmount)}
+            {formatAmount(
+              totalPaidAmount
+            )}
           </h2>
+
         </div>
 
       </div>
@@ -516,6 +558,8 @@ const PaymentList = () => {
 
       <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
 
+        {/* Loading */}
+
         {loading ? (
 
           <div className="flex items-center justify-center py-16">
@@ -528,6 +572,8 @@ const PaymentList = () => {
           </div>
 
         ) : filteredPayments.length === 0 ? (
+
+          /* Empty */
 
           <div className="py-16 text-center">
 
@@ -547,6 +593,8 @@ const PaymentList = () => {
           </div>
 
         ) : (
+
+          /* Payment Table */
 
           <div className="overflow-x-auto">
 
@@ -704,6 +752,8 @@ const PaymentList = () => {
 
                         <div className="flex justify-end items-center gap-1">
 
+                          {/* View */}
+
                           <Link
                             to={`/payments/${payment.id}`}
                             className="p-2 rounded-lg text-[#7A7A7A] hover:text-[#2F6FED] hover:bg-[#EEF4FF] transition"
@@ -712,9 +762,11 @@ const PaymentList = () => {
                             <Eye size={17} />
                           </Link>
 
+                          {/* Edit */}
+
                           {canEdit(
                             permissions,
-                            "services"
+                            "payments"
                           ) && (
                             <Link
                               to={`/payments/${payment.id}/edit`}
@@ -725,9 +777,11 @@ const PaymentList = () => {
                             </Link>
                           )}
 
+                          {/* Delete */}
+
                           {canDelete(
                             permissions,
-                            "services"
+                            "payments"
                           ) && (
                             <button
                               type="button"

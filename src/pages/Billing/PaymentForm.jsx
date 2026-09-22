@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -132,13 +133,18 @@ const PaymentForm = () => {
             data.payment_method ?? "CASH",
           transaction_id:
             data.transaction_id ?? "",
-          status: data.status ?? "PENDING",
+          status:
+            data.status ?? "PENDING",
           description:
             data.description ?? "",
-          notes: data.notes ?? "",
+          notes:
+            data.notes ?? "",
         });
       } catch (err) {
-        console.error("Payment Load Error:", err);
+        console.error(
+          "Payment Load Error:",
+          err
+        );
 
         setError(
           err?.response?.data?.detail ||
@@ -171,23 +177,26 @@ const PaymentForm = () => {
 
   const selectedMember = members.find(
     (member) =>
-      String(member.id) === String(formData.member)
+      String(member.id) ===
+      String(formData.member)
   );
 
   /* =========================================================
      FILTER INVOICES BY SELECTED MEMBER
   ========================================================= */
 
-  const memberInvoices = invoices.filter((invoice) => {
-    if (!formData.member) {
-      return true;
-    }
+  const memberInvoices = invoices.filter(
+    (invoice) => {
+      if (!formData.member) {
+        return true;
+      }
 
-    return (
-      String(invoice.member) ===
-      String(formData.member)
-    );
-  });
+      return (
+        String(invoice.member) ===
+        String(formData.member)
+      );
+    }
+  );
 
   /* =========================================================
      SUBMIT
@@ -203,13 +212,20 @@ const PaymentForm = () => {
       return;
     }
 
-    if (!formData.amount || Number(formData.amount) <= 0) {
-      setError("Amount must be greater than 0.");
+    if (
+      !formData.amount ||
+      Number(formData.amount) <= 0
+    ) {
+      setError(
+        "Amount must be greater than 0."
+      );
       return;
     }
 
     if (!formData.payment_method) {
-      setError("Payment method is required.");
+      setError(
+        "Payment method is required."
+      );
       return;
     }
 
@@ -226,12 +242,14 @@ const PaymentForm = () => {
         formData.payment_method,
 
       transaction_id:
-        formData.transaction_id.trim() || null,
+        formData.transaction_id.trim() ||
+        null,
 
       status: formData.status,
 
       description:
-        formData.description.trim() || null,
+        formData.description.trim() ||
+        null,
 
       notes:
         formData.notes.trim() || null,
@@ -248,12 +266,21 @@ const PaymentForm = () => {
 
       navigate("/payments");
     } catch (err) {
-      console.error("Payment Save Error:", err);
+      console.error(
+        "Payment Save Error:",
+        err
+      );
 
-      const responseData = err?.response?.data;
+      const responseData =
+        err?.response?.data;
 
-      if (typeof responseData === "object") {
-        const messages = Object.entries(responseData)
+      if (
+        responseData &&
+        typeof responseData === "object"
+      ) {
+        const messages = Object.entries(
+          responseData
+        )
           .map(([field, value]) => {
             const message = Array.isArray(value)
               ? value.join(", ")
@@ -264,10 +291,13 @@ const PaymentForm = () => {
           .join("\n");
 
         setError(
-          messages || "Failed to save payment."
+          messages ||
+            "Failed to save payment."
         );
       } else {
-        setError("Failed to save payment.");
+        setError(
+          "Failed to save payment."
+        );
       }
     } finally {
       setLoading(false);
@@ -275,15 +305,19 @@ const PaymentForm = () => {
   };
 
   /* =========================================================
-     PERMISSION
+     PERMISSION - CREATE
   ========================================================= */
 
   if (
     !isEditMode &&
-    !canAdd(permissions, "services")
+    !canAdd(
+      permissions,
+      "payments"
+    )
   ) {
     return (
       <div className="min-h-screen bg-[#F2F2F2] p-6">
+
         <div className="max-w-2xl mx-auto bg-white rounded-xl border border-[#E5E7EB] p-8 text-center">
 
           <h2 className="text-xl font-bold text-[#212121]">
@@ -291,7 +325,8 @@ const PaymentForm = () => {
           </h2>
 
           <p className="text-sm text-[#7A7A7A] mt-2">
-            You do not have permission to create payments.
+            You do not have permission
+            to create payments.
           </p>
 
           <Link
@@ -303,16 +338,25 @@ const PaymentForm = () => {
           </Link>
 
         </div>
+
       </div>
     );
   }
 
+  /* =========================================================
+     PERMISSION - EDIT
+  ========================================================= */
+
   if (
     isEditMode &&
-    !canEdit(permissions, "services")
+    !canEdit(
+      permissions,
+      "payments"
+    )
   ) {
     return (
       <div className="min-h-screen bg-[#F2F2F2] p-6">
+
         <div className="max-w-2xl mx-auto bg-white rounded-xl border border-[#E5E7EB] p-8 text-center">
 
           <h2 className="text-xl font-bold text-[#212121]">
@@ -320,7 +364,8 @@ const PaymentForm = () => {
           </h2>
 
           <p className="text-sm text-[#7A7A7A] mt-2">
-            You do not have permission to edit payments.
+            You do not have permission
+            to edit payments.
           </p>
 
           <Link
@@ -332,6 +377,7 @@ const PaymentForm = () => {
           </Link>
 
         </div>
+
       </div>
     );
   }
@@ -343,6 +389,7 @@ const PaymentForm = () => {
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-[#F2F2F2] p-6">
+
         <div className="flex justify-center items-center py-20">
 
           <RefreshCw
@@ -351,9 +398,14 @@ const PaymentForm = () => {
           />
 
         </div>
+
       </div>
     );
   }
+
+  /* =========================================================
+     RENDER
+  ========================================================= */
 
   return (
     <div className="min-h-screen bg-[#F2F2F2] p-6">
@@ -460,10 +512,12 @@ const PaymentForm = () => {
                 onChange={(event) => {
                   handleChange(event);
 
-                  setFormData((previous) => ({
-                    ...previous,
-                    invoice: "",
-                  }));
+                  setFormData(
+                    (previous) => ({
+                      ...previous,
+                      invoice: "",
+                    })
+                  );
                 }}
                 required
                 disabled={membersLoading}
@@ -476,16 +530,18 @@ const PaymentForm = () => {
                     : "Select Member"}
                 </option>
 
-                {members.map((member) => (
-                  <option
-                    key={member.id}
-                    value={member.id}
-                  >
-                    {member.member_id
-                      ? `${member.member_id} — ${member.full_name}`
-                      : `${member.full_name} — ID: ${member.id}`}
-                  </option>
-                ))}
+                {members.map(
+                  (member) => (
+                    <option
+                      key={member.id}
+                      value={member.id}
+                    >
+                      {member.member_id
+                        ? `${member.member_id} — ${member.full_name}`
+                        : `${member.full_name} — ID: ${member.id}`}
+                    </option>
+                  )
+                )}
 
               </select>
 
@@ -522,31 +578,39 @@ const PaymentForm = () => {
                     ? "Select member first"
                     : invoicesLoading
                     ? "Loading invoices..."
-                    : memberInvoices.length === 0
+                    : memberInvoices.length ===
+                      0
                     ? "No invoices found"
                     : "Select Invoice"}
                 </option>
 
-                {memberInvoices.map((invoice) => (
-                  <option
-                    key={invoice.id}
-                    value={invoice.id}
-                  >
-                    {invoice.invoice_id}
-                    {" — "}
-                    {invoice.service_name}
-                    {" — "}
-                    ৳
-                    {Number(
-                      invoice.total_amount || 0
-                    ).toLocaleString("en-BD")}
-                  </option>
-                ))}
+                {memberInvoices.map(
+                  (invoice) => (
+                    <option
+                      key={invoice.id}
+                      value={invoice.id}
+                    >
+                      {invoice.invoice_id}
+                      {" — "}
+                      {invoice.service_name}
+                      {" — "}
+                      ৳
+                      {Number(
+                        invoice.total_amount ||
+                          0
+                      ).toLocaleString(
+                        "en-BD"
+                      )}
+                    </option>
+                  )
+                )}
 
               </select>
 
               <p className="text-xs text-[#7A7A7A] mt-1.5">
-                Optional. Only invoices belonging to the selected member are shown.
+                Optional. Only invoices
+                belonging to the selected
+                member are shown.
               </p>
 
             </div>
@@ -589,7 +653,9 @@ const PaymentForm = () => {
 
               <select
                 name="payment_method"
-                value={formData.payment_method}
+                value={
+                  formData.payment_method
+                }
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2.5 rounded-lg border border-[#E5E7EB] bg-white outline-none focus:border-[#2F6FED] focus:ring-2 focus:ring-[#EEF4FF]"
@@ -630,7 +696,9 @@ const PaymentForm = () => {
               <input
                 type="text"
                 name="transaction_id"
-                value={formData.transaction_id}
+                value={
+                  formData.transaction_id
+                }
                 onChange={handleChange}
                 placeholder="e.g. TXN123456789"
                 maxLength={100}
@@ -638,7 +706,9 @@ const PaymentForm = () => {
               />
 
               <p className="text-xs text-[#7A7A7A] mt-1.5">
-                Required only when applicable to the payment method.
+                Required only when
+                applicable to the payment
+                method.
               </p>
 
             </div>
@@ -705,7 +775,9 @@ const PaymentForm = () => {
               <input
                 type="text"
                 name="description"
-                value={formData.description}
+                value={
+                  formData.description
+                }
                 onChange={handleChange}
                 placeholder="Short payment description"
                 maxLength={255}
